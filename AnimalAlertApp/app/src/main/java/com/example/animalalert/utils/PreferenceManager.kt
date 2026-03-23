@@ -8,6 +8,7 @@ import com.google.gson.reflect.TypeToken
 
 class PreferenceManager(context: Context) {
     private val prefs: SharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+    private val historyLock = Any()
 
     companion object {
         private const val PREFS_NAME = "AnimalAlertPrefs"
@@ -126,21 +127,30 @@ class PreferenceManager(context: Context) {
         return prefs.getBoolean(KEY_IN_APP_NOTIFICATION_ENABLED, true)
     }
     
-    // Detection History
+    // Detection History — synchronized to prevent races between
+    // AlertService (IO thread) and UI fragments (main thread).
     fun addDetectionHistory(detection: DetectionHistory) {
-        val history = getDetectionHistory().toMutableList()
-        history.add(0, detection) // Add to beginning
-        
-        // Keep only last MAX_HISTORY_SIZE detections
-        if (history.size > MAX_HISTORY_SIZE) {
-            history.removeAt(history.size - 1)
+        synchronized(historyLock) {
+            val history = getDetectionHistoryInternal().toMutableList()
+            history.add(0, detection) // Add to beginning
+
+            // Keep only last MAX_HISTORY_SIZE detections
+            if (history.size > MAX_HISTORY_SIZE) {
+                history.removeAt(history.size - 1)
+            }
+
+            val json = gson.toJson(history)
+            prefs.edit().putString(KEY_DETECTION_HISTORY, json).commit()
         }
-        
-        val json = gson.toJson(history)
-        prefs.edit().putString(KEY_DETECTION_HISTORY, json).apply()
     }
-    
+
     fun getDetectionHistory(): List<DetectionHistory> {
+        synchronized(historyLock) {
+            return getDetectionHistoryInternal()
+        }
+    }
+
+    private fun getDetectionHistoryInternal(): List<DetectionHistory> {
         val json = prefs.getString(KEY_DETECTION_HISTORY, null)
         return if (json != null) {
             val type = object : TypeToken<List<DetectionHistory>>() {}.type
@@ -149,9 +159,11 @@ class PreferenceManager(context: Context) {
             emptyList()
         }
     }
-    
+
     fun clearDetectionHistory() {
-        prefs.edit().remove(KEY_DETECTION_HISTORY).apply()
+        synchronized(historyLock) {
+            prefs.edit().remove(KEY_DETECTION_HISTORY).commit()
+        }
     }
 }
 

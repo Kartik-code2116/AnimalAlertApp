@@ -1,7 +1,9 @@
 package com.example.animalalert.ui
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.pm.PackageManager
+import android.location.Location
 import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -22,6 +24,8 @@ import com.example.animalalert.databinding.ActivityCameraDetectionBinding
 import com.example.animalalert.ml.YOLOv8Detector
 import com.example.animalalert.model.DetectionHistory
 import com.example.animalalert.utils.PreferenceManager
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
 import kotlinx.coroutines.*
 import java.io.ByteArrayOutputStream
 import java.util.*
@@ -36,6 +40,8 @@ class CameraDetectionActivity : AppCompatActivity() {
     private lateinit var cameraExecutor: ExecutorService
     private lateinit var detector: YOLOv8Detector
     private lateinit var preferenceManager: PreferenceManager
+    private lateinit var fusedLocationClient: FusedLocationProviderClient
+    private var currentLocation: Location? = null
     private var lastDetectionTime: Long = 0
     private val detectionCooldown = 5000L // 5 seconds between detections
 
@@ -46,6 +52,8 @@ class CameraDetectionActivity : AppCompatActivity() {
 
         preferenceManager = PreferenceManager(this)
         cameraExecutor = Executors.newSingleThreadExecutor()
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+        fetchCurrentLocation()
 
         // Initialize detector
         detector = YOLOv8Detector(this)
@@ -194,14 +202,18 @@ class CameraDetectionActivity : AppCompatActivity() {
             Confidence: ${(bestDetection.confidence * 100).toInt()}%
         """.trimIndent()
 
-        // Save to detection history
+        // Save to detection history with real GPS coordinates
+        val lat = currentLocation?.latitude
+        val lng = currentLocation?.longitude
+        val locationStr = if (lat != null && lng != null) "$lat,$lng" else "Camera Location"
+
         val detection = DetectionHistory(
             id = UUID.randomUUID().toString(),
             animalType = bestDetection.className,
             confidence = bestDetection.confidence * 100,
-            location = getCurrentLocationString(),
-            latitude = null, // Could get from GPS
-            longitude = null,
+            location = locationStr,
+            latitude = lat,
+            longitude = lng,
             timestamp = System.currentTimeMillis(),
             dangerLevel = DetectionHistory.calculateDangerLevel(bestDetection.className, bestDetection.confidence * 100)
         )
@@ -215,9 +227,15 @@ class CameraDetectionActivity : AppCompatActivity() {
         }
     }
 
-    private fun getCurrentLocationString(): String {
-        // In a real implementation, get from GPS
-        return "Camera Location"
+    @SuppressLint("MissingPermission")
+    private fun fetchCurrentLocation() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+            == PackageManager.PERMISSION_GRANTED
+        ) {
+            fusedLocationClient.lastLocation.addOnSuccessListener { location ->
+                currentLocation = location
+            }
+        }
     }
 
     private fun allPermissionsGranted() = REQUIRED_PERMISSIONS.all {

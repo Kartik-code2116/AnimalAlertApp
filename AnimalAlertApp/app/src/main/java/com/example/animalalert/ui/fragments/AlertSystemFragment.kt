@@ -132,10 +132,8 @@ class AlertSystemFragment : Fragment() {
                     if (response.isSuccessful) {
                         response.body()?.let { alert ->
                             updateUI(alert)
-                            if (alert.animal_detected) {
-                                preferenceManager.incrementTotalDetections()
-                                preferenceManager.incrementTodayDetections()
-                            }
+                            // Stats are already incremented by AlertService;
+                            // do NOT increment here to avoid double-counting.
                         }
                     }
                 } catch (e: Exception) {

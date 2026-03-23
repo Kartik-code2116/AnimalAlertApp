@@ -1,10 +1,14 @@
 package com.example.animalalert.Service
 
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.app.Service
 import android.content.Intent
 import android.media.MediaPlayer
+import android.os.Build
 import android.os.IBinder
 import android.util.Log
+import androidx.core.app.NotificationCompat
 import com.example.animalalert.R
 import com.example.animalalert.model.AlertResponse
 import com.example.animalalert.model.DetectionHistory
@@ -29,6 +33,39 @@ class AlertService : Service() {
     private var lastDetectionId: String? = null
 
     private var isMonitoring = false
+
+    companion object {
+        private const val FOREGROUND_CHANNEL_ID = "alert_service_channel"
+        private const val FOREGROUND_NOTIFICATION_ID = 2001
+    }
+
+    override fun onCreate() {
+        super.onCreate()
+        startForegroundWithNotification()
+    }
+
+    private fun startForegroundWithNotification() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(
+                FOREGROUND_CHANNEL_ID,
+                "Alert Monitoring Service",
+                NotificationManager.IMPORTANCE_LOW
+            ).apply {
+                description = "Keeps the animal alert monitoring service running"
+            }
+            val manager = getSystemService(NotificationManager::class.java)
+            manager.createNotificationChannel(channel)
+        }
+
+        val notification = NotificationCompat.Builder(this, FOREGROUND_CHANNEL_ID)
+            .setContentTitle("Animal Alert Active")
+            .setContentText("Monitoring for animal detections...")
+            .setSmallIcon(R.drawable.ic_alert)
+            .setOngoing(true)
+            .build()
+
+        startForeground(FOREGROUND_NOTIFICATION_ID, notification)
+    }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
 
@@ -101,10 +138,15 @@ class AlertService : Service() {
     }
 
     private fun stopSiren() {
-        if (mediaPlayer?.isPlaying == true) {
-            mediaPlayer?.stop()
+        try {
+            if (mediaPlayer?.isPlaying == true) {
+                mediaPlayer?.stop()
+            }
             mediaPlayer?.reset()
             mediaPlayer?.release()
+        } catch (e: Exception) {
+            Log.e("AlertService", "Error stopping siren: ${e.message}")
+        } finally {
             mediaPlayer = null
             Log.d("AlertService", "SIREN STOPPED")
         }
@@ -165,12 +207,14 @@ class AlertService : Service() {
             notificationHelper.showAnimalDetectionNotification(alert)
         }
         
-        // Email notification
+        // Email notification — skipped from background service.
+        // EmailHelper uses startActivity() which cannot launch from a background service
+        // on Android 10+. Email alerts are only sent when triggered from a foreground Activity.
+        // To send emails from background, integrate a backend email API instead.
         if (prefs.isEmailNotificationEnabled()) {
             val email = prefs.getUserEmail()
             if (email.isNotEmpty()) {
-                val emailHelper = EmailHelper(this)
-                emailHelper.sendEmailNotification(email, alert)
+                Log.d("AlertService", "Email notification skipped (cannot launch email app from background service). Email: $email")
             }
         }
         

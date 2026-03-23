@@ -15,6 +15,8 @@
     <uses-permission android:name="android.permission.RECEIVE_SMS" />
     <uses-permission android:name="android.permission.READ_SMS" />
     <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
     <uses-feature android:name="android.hardware.camera" android:required="true" />
     <uses-feature android:name="android.hardware.camera.autofocus" android:required="false" />
 
@@ -27,10 +29,10 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.AnimalAlert">
 
-        <!-- Google Maps API Key -->
+        <!-- Google Maps API Key (loaded from local.properties) -->
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="AIzaSyA-cr7SeRgDBdqNeY4tb8pzbzzFtQukXyU" />
+            android:value="${MAPS_API_KEY}" />
 
         <activity
             android:name=".ui.LoginActivity"
@@ -60,7 +62,8 @@
 
         <service
             android:name=".Service.AlertService"
-            android:exported="false" />
+            android:exported="false"
+            android:foregroundServiceType="specialUse" />
 
     </application>
 

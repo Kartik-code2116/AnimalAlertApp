@@ -1,7 +1,16 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("kotlin-parcelize") // Use this for @Parcelize annotation if needed
+}
+
+// Load Maps API key from local.properties (must be outside android {} block)
+val localProperties = Properties()
+val localPropertiesFile = rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    localProperties.load(localPropertiesFile.inputStream())
 }
 
 android {
@@ -14,9 +23,10 @@ android {
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
+
+        manifestPlaceholders["MAPS_API_KEY"] = localProperties.getProperty("MAPS_API_KEY", "")
     }
 
-    // You already have this, which is correct for enabling View Binding
     buildFeatures {
         viewBinding = true
     }

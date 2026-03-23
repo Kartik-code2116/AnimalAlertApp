@@ -18,8 +18,11 @@ class YOLOv8Detector(private val context: Context) {
 
     companion object {
         private const val TAG = "YOLOv8Detector"
+        // Preferred model file name — set this to the exact model you want to use.
+        // If not found, falls back to the first .pt file in assets.
+        private const val PREFERRED_MODEL = "yolov8n.pt"
+
         // IMPORTANT: You MUST update these class names to match YOUR model's classes
-        // This is likely the cause of your issue - mismatched class names
         private val CLASS_NAMES = arrayOf(
             "person", "bicycle", "car", "motorcycle", "airplane", "bus", "train", "truck", "boat",
             "traffic light", "fire hydrant", "stop sign", "parking meter", "bench", "bird", "cat",
@@ -98,10 +101,18 @@ class YOLOv8Detector(private val context: Context) {
             if (files != null) {
                 Log.d(TAG, "Files in assets folder: ${files.joinToString(", ")}")
 
-                // Look for model files
-                files.filter { it.endsWith(".pt") || it.endsWith(".pth") }.forEach { fileName ->
-                    Log.d(TAG, "Found model file candidate: $fileName")
-                    return fileName
+                val modelFiles = files.filter { it.endsWith(".pt") || it.endsWith(".pth") }
+
+                // Prefer the explicitly configured model file
+                modelFiles.find { it == PREFERRED_MODEL }?.let { preferred ->
+                    Log.d(TAG, "Using preferred model: $preferred")
+                    return preferred
+                }
+
+                // Fallback to first available model
+                modelFiles.firstOrNull()?.let { fallback ->
+                    Log.w(TAG, "Preferred model '$PREFERRED_MODEL' not found, falling back to: $fallback")
+                    return fallback
                 }
             }
             Log.e(TAG, "No .pt or .pth files found in assets")
@@ -263,23 +274,14 @@ class YOLOv8Detector(private val context: Context) {
         if (detections.isEmpty()) return emptyList()
 
         val sortedDetections = detections.sortedByDescending { it.confidence }
-        val selected = mutableListOf<Detection>()
+        val current = sortedDetections.first()
 
-        while (sortedDetections.isNotEmpty()) {
-            val current = sortedDetections.first()
-            selected.add(current)
-
-            val remaining = mutableListOf<Detection>()
-            for (det in sortedDetections.drop(1)) {
-                val iou = calculateIOU(current, det)
-                if (iou < iouThreshold) {
-                    remaining.add(det)
-                }
-            }
-            return selected + nonMaximumSuppression(remaining, iouThreshold)
+        // Keep detections that don't overlap significantly with the best one
+        val remaining = sortedDetections.drop(1).filter { det ->
+            calculateIOU(current, det) < iouThreshold
         }
 
-        return selected
+        return listOf(current) + nonMaximumSuppression(remaining, iouThreshold)
     }
 
     private fun calculateIOU(det1: Detection, det2: Detection): Float {
