@@ -198,15 +198,13 @@ class YOLOv8Detector(private val context: Context) {
 
             val outputData = output.dataAsFloatArray
 
-            // Iterate through predictions
             for (i in 0 until numPredictions) {
-                val baseIndex = i * numFeatures
-
                 // Get bounding box (cx, cy, w, h) - normalized to 0-1
-                val cx = outputData[baseIndex]
-                val cy = outputData[baseIndex + 1]
-                val w = outputData[baseIndex + 2]
-                val h = outputData[baseIndex + 3]
+                // Feature indexes: 0=cx, 1=cy, 2=w, 3=h
+                val cx = outputData[0 * numPredictions + i]
+                val cy = outputData[1 * numPredictions + i]
+                val w = outputData[2 * numPredictions + i]
+                val h = outputData[3 * numPredictions + i]
 
                 // Convert to pixel coordinates
                 val x1 = (cx - w/2) * originalWidth
@@ -219,7 +217,7 @@ class YOLOv8Detector(private val context: Context) {
                 var maxClassIndex = 0
 
                 for (j in 4 until numFeatures) {
-                    val score = outputData[baseIndex + j]
+                    val score = outputData[j * numPredictions + i]
                     if (score > maxScore) {
                         maxScore = score
                         maxClassIndex = j - 4

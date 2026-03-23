@@ -63,9 +63,11 @@ class DashboardFragment : Fragment() {
     }
 
     private fun updateStats() {
-        // Simulate data updates - replace with real data from ViewModel
-        animateCounter(binding.tvDetectionsToday, 12, 1000)
-        animateCounter(binding.tvActiveAlerts, 3, 800)
+        val prefs = com.example.animalalert.utils.PreferenceManager(requireContext())
+        val today = prefs.getTodayDetections()
+        val total = prefs.getTotalDetections()
+        animateCounter(binding.tvDetectionsToday, today, 1000)
+        animateCounter(binding.tvActiveAlerts, total, 800) // Using total for now or whatever fits
         binding.tvAccuracy.text = "98.5%"
     }
 
