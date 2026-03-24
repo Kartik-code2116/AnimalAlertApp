@@ -25,6 +25,11 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import kotlinx.coroutines.*
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import androidx.core.content.res.ResourcesCompat
+import com.google.android.gms.maps.model.BitmapDescriptor
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
 
 class MapFragment : Fragment(), OnMapReadyCallback {
 
@@ -106,7 +111,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             val latLng = LatLng(lat, lng)
             val dangerText = detection.getDangerLevelText()
             val isWild = detection.dangerLevel >= 3
-            val markerColor = if (isWild) com.google.android.gms.maps.model.BitmapDescriptorFactory.HUE_RED else com.google.android.gms.maps.model.BitmapDescriptorFactory.HUE_BLUE
+            val dotIcon = if (isWild) vectorToBitmap(R.drawable.ic_red_dot) else vectorToBitmap(R.drawable.ic_blue_dot)
             val circleStroke = if (isWild) android.graphics.Color.RED else android.graphics.Color.BLUE
             val circleFill = if (isWild) 0x33FF0000 else 0x330000FF
             
@@ -115,7 +120,8 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                     .position(latLng)
                     .title("Animal Detected: ${detection.animalType ?: "Unknown"}")
                     .snippet("Confidence: ${detection.confidence}% | Danger: $dangerText | Location: ${detection.location ?: "N/A"}")
-                    .icon(com.google.android.gms.maps.model.BitmapDescriptorFactory.defaultMarker(markerColor))
+                    .anchor(0.5f, 0.5f) // Center the dot
+                    .icon(dotIcon)
             )
             marker?.let { markers.add(it) }
             
@@ -270,7 +276,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                     
                     val liveDanger = com.example.animalalert.model.DetectionHistory.calculateDangerLevel(alert.animal_type, alert.confidence)
                     val isWild = liveDanger >= 3
-                    val liveMarkerColor = if (isWild) com.google.android.gms.maps.model.BitmapDescriptorFactory.HUE_RED else com.google.android.gms.maps.model.BitmapDescriptorFactory.HUE_BLUE
+                    val liveDotIcon = if (isWild) vectorToBitmap(R.drawable.ic_red_dot) else vectorToBitmap(R.drawable.ic_blue_dot)
                     val liveCircleStroke = if (isWild) android.graphics.Color.RED else android.graphics.Color.BLUE
                     val liveCircleFill = if (isWild) 0x33FF0000 else 0x330000FF
                     
@@ -280,7 +286,8 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                             .position(latLng)
                             .title("LIVE: ${alert.animal_type ?: "Unknown"}")
                             .snippet("Confidence: ${alert.confidence}%")
-                            .icon(com.google.android.gms.maps.model.BitmapDescriptorFactory.defaultMarker(liveMarkerColor))
+                            .anchor(0.5f, 0.5f) // Center the dot
+                            .icon(liveDotIcon)
                     )
                     marker?.let { markers.add(it) }
                     
@@ -321,6 +328,19 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                 fetchLatestAlert()
             }
         }
+    }
+
+    private fun vectorToBitmap(drawableId: Int): BitmapDescriptor? {
+        val drawable = ResourcesCompat.getDrawable(resources, drawableId, null) ?: return null
+        val bitmap = Bitmap.createBitmap(
+            drawable.intrinsicWidth,
+            drawable.intrinsicHeight,
+            Bitmap.Config.ARGB_8888
+        )
+        val canvas = Canvas(bitmap)
+        drawable.setBounds(0, 0, canvas.width, canvas.height)
+        drawable.draw(canvas)
+        return BitmapDescriptorFactory.fromBitmap(bitmap)
     }
 
     override fun onDestroyView() {
