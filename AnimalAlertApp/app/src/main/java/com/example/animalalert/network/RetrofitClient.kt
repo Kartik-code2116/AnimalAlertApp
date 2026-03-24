@@ -9,8 +9,8 @@ import java.util.concurrent.TimeUnit
 object RetrofitClient {
 
     /**
-     * For Android Emulator use 10.0.2.2.
-     * For real device use your computer LAN IP, e.g. http://192.168.1.20:5000/
+     * Set to your computer's local IP Address.
+     * Use 192.168.1.21 for Wi-Fi connected devices.
      */
     private const val BASE_URL = "http://192.168.1.21:5000/"
 

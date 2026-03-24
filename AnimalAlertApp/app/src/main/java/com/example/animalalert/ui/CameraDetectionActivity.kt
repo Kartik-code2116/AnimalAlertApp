@@ -38,7 +38,6 @@ class CameraDetectionActivity : AppCompatActivity() {
     private lateinit var binding: ActivityCameraDetectionBinding
     private var imageCapture: ImageCapture? = null
     private var imageAnalyzer: ImageAnalysis? = null
-    private var preview: Preview? = null
     private lateinit var cameraExecutor: ExecutorService
     private lateinit var preferenceManager: PreferenceManager
     private lateinit var fusedLocationClient: FusedLocationProviderClient
@@ -106,7 +105,7 @@ class CameraDetectionActivity : AppCompatActivity() {
         cameraProviderFuture.addListener({
             val cameraProvider: ProcessCameraProvider = cameraProviderFuture.get()
 
-            preview = Preview.Builder()
+            val preview = Preview.Builder()
                 .build()
                 .also {
                     it.setSurfaceProvider(binding.previewView.surfaceProvider)
@@ -121,8 +120,8 @@ class CameraDetectionActivity : AppCompatActivity() {
                 cameraProvider.bindToLifecycle(
                     this,
                     cameraSelector,
-                    preview!!,
-                    imageCapture!!
+                    preview,
+                    imageCapture
                 )
             } catch (exc: Exception) {
                 Toast.makeText(this, "Camera initialization failed: ${exc.message}", Toast.LENGTH_SHORT).show()
@@ -146,16 +145,11 @@ class CameraDetectionActivity : AppCompatActivity() {
             val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
 
             try {
-                cameraProvider.unbindAll()
-                val useCases = mutableListOf<UseCase>()
-                preview?.let { useCases.add(it) }
-                imageCapture?.let { useCases.add(it) }
-                imageAnalyzer?.let { useCases.add(it) }
-
+                cameraProvider.unbind(imageAnalyzer)
                 cameraProvider.bindToLifecycle(
                     this,
                     cameraSelector,
-                    *useCases.toTypedArray()
+                    imageAnalyzer
                 )
             } catch (e: Exception) {
                 Log.e(TAG, "Error binding image analyzer: ${e.message}")
@@ -167,25 +161,8 @@ class CameraDetectionActivity : AppCompatActivity() {
         val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
         cameraProviderFuture.addListener({
             val cameraProvider = cameraProviderFuture.get()
-            cameraProvider.unbindAll()
+            imageAnalyzer?.let { analyzer -> cameraProvider.unbind(analyzer) }
             imageAnalyzer = null
-            
-            val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
-            val useCases = mutableListOf<UseCase>()
-            preview?.let { useCases.add(it) }
-            imageCapture?.let { useCases.add(it) }
-            
-            if (useCases.isNotEmpty()) {
-                try {
-                    cameraProvider.bindToLifecycle(
-                        this,
-                        cameraSelector,
-                        *useCases.toTypedArray()
-                    )
-                } catch (e: Exception) {
-                    Log.e(TAG, "Error rebinding after stop: ${e.message}")
-                }
-            }
         }, ContextCompat.getMainExecutor(this))
     }
 
@@ -341,7 +318,27 @@ class CameraDetectionActivity : AppCompatActivity() {
         private val REQUIRED_PERMISSIONS = arrayOf(Manifest.permission.CAMERA)
     }
 
-    // Removed custom ImageProxy.toBitmap() as it is already present in CameraX and unused
+    private fun ImageProxy.toBitmap(): Bitmap {
+        val yBuffer = planes[0].buffer
+        val uBuffer = planes[1].buffer
+        val vBuffer = planes[2].buffer
 
+        val ySize = yBuffer.remaining()
+        val uSize = uBuffer.remaining()
+        val vSize = vBuffer.remaining()
+
+        val nv21 = ByteArray(ySize + uSize + vSize)
+
+        yBuffer.get(nv21, 0, ySize)
+        vBuffer.get(nv21, ySize, vSize)
+        uBuffer.get(nv21, ySize + vSize, uSize)
+
+        val yuvImage = YuvImage(nv21, ImageFormat.NV21, this.width, this.height, null)
+        val out = ByteArrayOutputStream()
+        yuvImage.compressToJpeg(Rect(0, 0, this.width, this.height), 50, out)
+        val imageBytes = out.toByteArray()
+        return BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
+            ?: Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)
+    }
 }
 

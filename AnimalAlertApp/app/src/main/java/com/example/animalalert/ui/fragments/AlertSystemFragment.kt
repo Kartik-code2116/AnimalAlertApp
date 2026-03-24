@@ -69,10 +69,18 @@ class AlertSystemFragment : Fragment() {
     }
     
     private fun setupRecyclerView() {
-        detectionAdapter = DetectionAdapter(emptyList()) { detection ->
-            // Navigate to MapFragment with detection location
-            navigateToMapWithDetection(detection)
-        }
+        detectionAdapter = DetectionAdapter(
+            detections = emptyList(),
+            onItemClick = { detection ->
+                // Navigate to MapFragment with detection location
+                navigateToMapWithDetection(detection)
+            },
+            onDeleteClick = { detection ->
+                preferenceManager.removeDetectionHistory(detection.id)
+                loadRecentDetections()
+                Toast.makeText(requireContext(), "Detection deleted", Toast.LENGTH_SHORT).show()
+            }
+        )
         
         binding.recyclerViewDetections.layoutManager = LinearLayoutManager(requireContext())
         binding.recyclerViewDetections.adapter = detectionAdapter

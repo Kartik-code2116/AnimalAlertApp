@@ -165,5 +165,14 @@ class PreferenceManager(context: Context) {
             prefs.edit().remove(KEY_DETECTION_HISTORY).commit()
         }
     }
+
+    fun removeDetectionHistory(detectionId: String) {
+        synchronized(historyLock) {
+            val history = getDetectionHistoryInternal().toMutableList()
+            history.removeAll { it.id == detectionId }
+            val json = gson.toJson(history)
+            prefs.edit().putString(KEY_DETECTION_HISTORY, json).commit()
+        }
+    }
 }
 

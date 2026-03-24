@@ -126,14 +126,39 @@ class AlertService : Service() {
 
 
     private fun playSiren() {
-        if (mediaPlayer == null) {
-            mediaPlayer = MediaPlayer.create(this, R.raw.siren)
-            mediaPlayer?.isLooping = true
-        }
+        try {
+            if (mediaPlayer == null) {
+                mediaPlayer = MediaPlayer()
+                val afd = resources.openRawResourceFd(R.raw.siren)
+                if (afd == null) return
+                mediaPlayer?.setDataSource(afd.fileDescriptor, afd.startOffset, afd.length)
+                afd.close()
 
-        if (mediaPlayer?.isPlaying == false) {
-            mediaPlayer?.start()
-            Log.d("AlertService", "SIREN PLAYING")
+                mediaPlayer?.setAudioAttributes(
+                    android.media.AudioAttributes.Builder()
+                        .setUsage(android.media.AudioAttributes.USAGE_ALARM)
+                        .setContentType(android.media.AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                        .build()
+                )
+                mediaPlayer?.isLooping = true
+                mediaPlayer?.prepare()
+                
+                try {
+                    // Maximize alarm volume so it is strictly heard
+                    val audioManager = getSystemService(android.content.Context.AUDIO_SERVICE) as android.media.AudioManager
+                    val maxVolume = audioManager.getStreamMaxVolume(android.media.AudioManager.STREAM_ALARM)
+                    audioManager.setStreamVolume(android.media.AudioManager.STREAM_ALARM, maxVolume, 0)
+                } catch (e: Exception) {
+                    Log.w("AlertService", "Could not max system volume: ${e.message}")
+                }
+            }
+
+            if (mediaPlayer?.isPlaying == false) {
+                mediaPlayer?.start()
+                Log.d("AlertService", "SIREN PLAYING LOUDLY")
+            }
+        } catch (e: Exception) {
+            Log.e("AlertService", "Error playing siren: ${e.message}")
         }
     }
 

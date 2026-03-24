@@ -79,7 +79,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             if (lat != 0.0 && lng != 0.0) {
                 // If map is already ready, show detection immediately
                 googleMap?.let {
-                    showDetectionOnMap(lat, lng, location, animalType, confidence, dangerLevel)
+                    showAllDetectionsOnMap(lat, lng, animalType, dangerLevel)
                     return true
                 }
                 // Otherwise, it will be shown in onMapReady
@@ -89,58 +89,56 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         return false
     }
     
-    private fun showDetectionOnMap(
-        lat: Double,
-        lng: Double,
-        location: String?,
-        animalType: String?,
-        confidence: Float,
-        dangerLevel: Int
+    private fun showAllDetectionsOnMap(
+        focusLat: Double? = null,
+        focusLng: Double? = null,
+        focusAnimalType: String? = null,
+        focusDangerLevel: Int = 1
     ) {
-        val latLng = LatLng(lat, lng)
-        
-        // Clear old markers
         googleMap?.clear()
         markers.clear()
         
-        // Get danger level text
-        val dangerText = when (dangerLevel) {
-            1 -> "Low"
-            2 -> "Moderate"
-            3 -> "Medium"
-            4 -> "High"
-            5 -> "Very High"
-            else -> "Unknown"
+        val historyList = com.example.animalalert.utils.PreferenceManager(requireContext()).getDetectionHistory()
+        
+        for (detection in historyList) {
+            val lat = detection.latitude ?: continue
+            val lng = detection.longitude ?: continue
+            val latLng = LatLng(lat, lng)
+            val dangerText = detection.getDangerLevelText()
+            
+            val marker = googleMap?.addMarker(
+                MarkerOptions()
+                    .position(latLng)
+                    .title("Animal Detected: ${detection.animalType ?: "Unknown"}")
+                    .snippet("Confidence: ${detection.confidence}% | Danger: $dangerText | Location: ${detection.location ?: "N/A"}")
+            )
+            marker?.let { markers.add(it) }
+            
+            googleMap?.addCircle(
+                com.google.android.gms.maps.model.CircleOptions()
+                    .center(latLng)
+                    .radius(150.0)
+                    .strokeWidth(2f)
+                    .strokeColor(android.graphics.Color.RED)
+                    .fillColor(0x33FF0000)
+            )
         }
         
-        // Add marker with danger info and explicitly RED color
-        val marker = googleMap?.addMarker(
-            MarkerOptions()
-                .position(latLng)
-                .title("Animal Detected: ${animalType ?: "Unknown"}")
-                .snippet("Confidence: ${confidence}% | Danger: $dangerText | Location: ${location ?: "N/A"}")
-                .icon(com.google.android.gms.maps.model.BitmapDescriptorFactory.defaultMarker(com.google.android.gms.maps.model.BitmapDescriptorFactory.HUE_RED))
-        )
-        marker?.let { markers.add(it) }
-        
-        // Add a red signal (danger zone circle)
-        googleMap?.addCircle(
-            com.google.android.gms.maps.model.CircleOptions()
-                .center(latLng)
-                .radius(150.0) // 150 meters
-                .strokeWidth(4f)
-                .strokeColor(android.graphics.Color.RED)
-                .fillColor(android.graphics.Color.argb(80, 255, 0, 0))
-        )
-        
-        // Move camera to marker
-        googleMap?.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15f))
-        
-        // Show info window
-        marker?.showInfoWindow()
-        
-        // Update status
-        binding.tvStatus.text = "📍 Detection Location: ${animalType ?: "Unknown"} (Danger: $dangerText)"
+        if (focusLat != null && focusLng != null && focusLat != 0.0 && focusLng != 0.0) {
+            val latLng = LatLng(focusLat, focusLng)
+            googleMap?.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15f))
+            
+            val dangerText = when (focusDangerLevel) {
+                1 -> "Low"; 2 -> "Moderate"; 3 -> "Medium"; 4 -> "High"; 5 -> "Very High"; else -> "Unknown"
+            }
+            binding.tvStatus.text = "📍 Focused on: ${focusAnimalType ?: "Unknown"} (Danger: $dangerText)"
+        } else if (historyList.isNotEmpty()) {
+            val first = historyList.first()
+            if (first.latitude != null && first.longitude != null) {
+                googleMap?.animateCamera(CameraUpdateFactory.newLatLngZoom(LatLng(first.latitude, first.longitude), 12f))
+                binding.tvStatus.text = "📍 Showing All Recent Detections"
+            }
+        }
     }
 
     override fun onMapReady(map: GoogleMap) {
@@ -171,7 +169,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             val dangerLevel = args.getInt("detection_danger", 1)
             
             if (lat != 0.0 && lng != 0.0) {
-                showDetectionOnMap(lat, lng, location, animalType, confidence, dangerLevel)
+                showAllDetectionsOnMap(lat, lng, animalType, dangerLevel)
             } else {
                 fetchLatestAlert()
                 startPeriodicUpdates()
@@ -258,28 +256,30 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                     val lng = locationParts[1].trim().toDouble()
                     val latLng = LatLng(lat, lng)
                     
-                    // Clear old markers and circles
+                    // Clear old markers completely and replot everything
                     googleMap?.clear()
                     markers.clear()
                     
-                    // Add new marker
+                    // Plot historical detections
+                    showAllDetectionsOnMap()
+                    
+                    // Add new LIVE marker
                     val marker = googleMap?.addMarker(
                         MarkerOptions()
                             .position(latLng)
-                            .title("Animal Detected: ${alert.animal_type ?: "Unknown"}")
+                            .title("LIVE: ${alert.animal_type ?: "Unknown"}")
                             .snippet("Confidence: ${alert.confidence}%")
-                            .icon(com.google.android.gms.maps.model.BitmapDescriptorFactory.defaultMarker(com.google.android.gms.maps.model.BitmapDescriptorFactory.HUE_RED))
                     )
                     marker?.let { markers.add(it) }
                     
-                    // Add a red signal (danger zone circle)
+                    // Add LIVE red circle
                     googleMap?.addCircle(
                         com.google.android.gms.maps.model.CircleOptions()
                             .center(latLng)
-                            .radius(150.0) // 150 meters
-                            .strokeWidth(4f)
+                            .radius(150.0)
+                            .strokeWidth(3f)
                             .strokeColor(android.graphics.Color.RED)
-                            .fillColor(android.graphics.Color.argb(80, 255, 0, 0))
+                            .fillColor(0x33FF0000)
                     )
                     
                     // Move camera to marker
@@ -297,7 +297,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             }
         } else {
             binding.tvStatus.text = "No active alerts"
-            googleMap?.clear()
+            markers.forEach { it.remove() }
             markers.clear()
         }
     }

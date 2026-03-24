@@ -13,6 +13,8 @@ class DashboardFragment : Fragment() {
 
     private var _binding: FragmentDashboardBinding? = null
     private val binding get() = _binding!!
+    private lateinit var detectionAdapter: com.example.animalalert.ui.adapters.DetectionAdapter
+    private lateinit var preferenceManager: com.example.animalalert.utils.PreferenceManager
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -25,13 +27,37 @@ class DashboardFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        preferenceManager = com.example.animalalert.utils.PreferenceManager(requireContext())
         setupViews()
         setupClickListeners()
         updateStats()
+        loadRecentDetections()
     }
 
     private fun setupViews() {
-        // Title is already set in XML layout
+        detectionAdapter = com.example.animalalert.ui.adapters.DetectionAdapter(
+            detections = emptyList(),
+            onItemClick = { detection ->
+                val intent = android.content.Intent(requireContext(), com.example.animalalert.ui.MainActivity::class.java).apply {
+                    putExtra("show_detection", true)
+                    putExtra("detection_lat", detection.latitude)
+                    putExtra("detection_lng", detection.longitude)
+                    putExtra("detection_location", detection.location)
+                    putExtra("detection_animal_type", detection.animalType)
+                    putExtra("detection_confidence", detection.confidence)
+                    putExtra("detection_danger", detection.dangerLevel)
+                }
+                startActivity(intent)
+            },
+            onDeleteClick = { detection ->
+                preferenceManager.removeDetectionHistory(detection.id)
+                loadRecentDetections()
+                updateStats()
+                Toast.makeText(requireContext(), "Detection deleted", Toast.LENGTH_SHORT).show()
+            }
+        )
+        binding.recyclerViewDashboardDetections.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(requireContext())
+        binding.recyclerViewDashboardDetections.adapter = detectionAdapter
     }
 
     private fun setupClickListeners() {
@@ -51,24 +77,26 @@ class DashboardFragment : Fragment() {
         binding.cardSettings.setOnClickListener {
             handleQuickActionClick(it)
         }
-
-        // Activity items
-        binding.cardActivity1.setOnClickListener {
-            handleActivityItemClick(it)
-        }
-
-        binding.cardActivity2.setOnClickListener {
-            handleActivityItemClick(it)
-        }
     }
 
     private fun updateStats() {
-        val prefs = com.example.animalalert.utils.PreferenceManager(requireContext())
-        val today = prefs.getTodayDetections()
-        val total = prefs.getTotalDetections()
+        val today = preferenceManager.getTodayDetections()
+        val total = preferenceManager.getTotalDetections()
         animateCounter(binding.tvDetectionsToday, today, 1000)
         animateCounter(binding.tvActiveAlerts, total, 800) // Using total for now or whatever fits
         binding.tvAccuracy.text = "98.5%"
+    }
+
+    private fun loadRecentDetections() {
+        val detections = preferenceManager.getDetectionHistory().take(3)
+        if (detections.isEmpty()) {
+            binding.recyclerViewDashboardDetections.visibility = View.GONE
+            binding.tvEmptyRecent.visibility = View.VISIBLE
+        } else {
+            binding.recyclerViewDashboardDetections.visibility = View.VISIBLE
+            binding.tvEmptyRecent.visibility = View.GONE
+            detectionAdapter.updateData(detections)
+        }
     }
 
     private fun animateCounter(textView: android.widget.TextView, target: Int, duration: Long) {
@@ -85,8 +113,8 @@ class DashboardFragment : Fragment() {
     private fun handleQuickActionClick(view: View) {
         when (view.id) {
             R.id.card_start_monitoring -> {
-                val intent = android.content.Intent(requireContext(), com.example.animalalert.ui.CameraDetectionActivity::class.java)
-                startActivity(intent)
+                Toast.makeText(requireContext(), "Starting monitoring...", Toast.LENGTH_SHORT).show()
+                // Add your monitoring start logic here
             }
             R.id.card_view_map -> {
                 navigateToTab(R.id.nav_map)
@@ -109,15 +137,10 @@ class DashboardFragment : Fragment() {
         }
     }
 
-    private fun handleActivityItemClick(view: View) {
-        Toast.makeText(requireContext(), "Viewing detection details...", Toast.LENGTH_SHORT).show()
-        // You can navigate to detailed view or show dialog
-        navigateToTab(R.id.nav_map)
-    }
-
     fun refreshData() {
         // Called when fragment is resumed or manually refreshed
         updateStats()
+        loadRecentDetections()
     }
 
     override fun onDestroyView() {
