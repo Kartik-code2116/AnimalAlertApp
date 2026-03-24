@@ -39,7 +39,7 @@ class EmailHelper(private val context: android.content.Context) {
             Animal Type: ${alert.animal_type ?: "Unknown"}
             Confidence: ${alert.confidence}%
             Location: ${alert.location ?: "Not available"}
-            Detection Time: ${dateFormat.format(Date(alert.timestamp))}
+            Detection Time: ${dateFormat.format(Date(if (alert.timestamp < 1000000000000L) alert.timestamp * 1000 else alert.timestamp))}
             
             This is an automated alert from Animal Alert System.
             

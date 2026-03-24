@@ -2,6 +2,7 @@ package com.example.animalalert.ui
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -217,6 +218,7 @@ class CameraDetectionActivity : AppCompatActivity() {
                 val lat = currentLocation?.latitude
                 val lng = currentLocation?.longitude
                 val locationStr = if (lat != null && lng != null) "$lat,$lng" else "Camera Location"
+                val dangerLevel = DetectionHistory.calculateDangerLevel(animal, conf)
                 val detection = DetectionHistory(
                     id = UUID.randomUUID().toString(),
                     animalType = animal,
@@ -225,9 +227,23 @@ class CameraDetectionActivity : AppCompatActivity() {
                     latitude = lat,
                     longitude = lng,
                     timestamp = System.currentTimeMillis(),
-                    dangerLevel = DetectionHistory.calculateDangerLevel(animal, conf)
+                    dangerLevel = dangerLevel
                 )
                 preferenceManager.addDetectionHistory(detection)
+                
+                // Directly show on Map
+                val mapIntent = Intent(this@CameraDetectionActivity, com.example.animalalert.ui.MainActivity::class.java).apply {
+                    putExtra("show_detection", true)
+                    putExtra("detection_lat", lat ?: 0.0)
+                    putExtra("detection_lng", lng ?: 0.0)
+                    putExtra("detection_location", locationStr)
+                    putExtra("detection_animal_type", animal)
+                    putExtra("detection_confidence", conf)
+                    putExtra("detection_danger", dangerLevel)
+                    flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+                }
+                startActivity(mapIntent)
+                finish() // Close the camera activity seamlessly
             } catch (e: Exception) {
                 Log.e(TAG, "Backend detect failed: ${e.message}", e)
                 binding.tvDetectionInfo.text = "Detection failed: ${e.localizedMessage ?: "Unknown error"}"

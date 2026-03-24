@@ -25,8 +25,8 @@
             android:layout_width="32dp"
             android:layout_height="32dp"
             android:layout_marginStart="8dp"
-            android:src="@drawable/ic_circle_blue"
-            app:tint="@color/white" />
+            android:src="@drawable/wildtrack5_o"
+            />
 
     </com.google.android.material.appbar.MaterialToolbar>
 

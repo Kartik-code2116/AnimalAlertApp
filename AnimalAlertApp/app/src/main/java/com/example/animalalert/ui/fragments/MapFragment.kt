@@ -105,12 +105,17 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             val lng = detection.longitude ?: continue
             val latLng = LatLng(lat, lng)
             val dangerText = detection.getDangerLevelText()
+            val isWild = detection.dangerLevel >= 3
+            val markerColor = if (isWild) com.google.android.gms.maps.model.BitmapDescriptorFactory.HUE_RED else com.google.android.gms.maps.model.BitmapDescriptorFactory.HUE_BLUE
+            val circleStroke = if (isWild) android.graphics.Color.RED else android.graphics.Color.BLUE
+            val circleFill = if (isWild) 0x33FF0000 else 0x330000FF
             
             val marker = googleMap?.addMarker(
                 MarkerOptions()
                     .position(latLng)
                     .title("Animal Detected: ${detection.animalType ?: "Unknown"}")
                     .snippet("Confidence: ${detection.confidence}% | Danger: $dangerText | Location: ${detection.location ?: "N/A"}")
+                    .icon(com.google.android.gms.maps.model.BitmapDescriptorFactory.defaultMarker(markerColor))
             )
             marker?.let { markers.add(it) }
             
@@ -119,8 +124,8 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                     .center(latLng)
                     .radius(150.0)
                     .strokeWidth(2f)
-                    .strokeColor(android.graphics.Color.RED)
-                    .fillColor(0x33FF0000)
+                    .strokeColor(circleStroke)
+                    .fillColor(circleFill)
             )
         }
         
@@ -263,23 +268,30 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                     // Plot historical detections
                     showAllDetectionsOnMap()
                     
+                    val liveDanger = com.example.animalalert.model.DetectionHistory.calculateDangerLevel(alert.animal_type, alert.confidence)
+                    val isWild = liveDanger >= 3
+                    val liveMarkerColor = if (isWild) com.google.android.gms.maps.model.BitmapDescriptorFactory.HUE_RED else com.google.android.gms.maps.model.BitmapDescriptorFactory.HUE_BLUE
+                    val liveCircleStroke = if (isWild) android.graphics.Color.RED else android.graphics.Color.BLUE
+                    val liveCircleFill = if (isWild) 0x33FF0000 else 0x330000FF
+                    
                     // Add new LIVE marker
                     val marker = googleMap?.addMarker(
                         MarkerOptions()
                             .position(latLng)
                             .title("LIVE: ${alert.animal_type ?: "Unknown"}")
                             .snippet("Confidence: ${alert.confidence}%")
+                            .icon(com.google.android.gms.maps.model.BitmapDescriptorFactory.defaultMarker(liveMarkerColor))
                     )
                     marker?.let { markers.add(it) }
                     
-                    // Add LIVE red circle
+                    // Add LIVE red/blue circle
                     googleMap?.addCircle(
                         com.google.android.gms.maps.model.CircleOptions()
                             .center(latLng)
                             .radius(150.0)
                             .strokeWidth(3f)
-                            .strokeColor(android.graphics.Color.RED)
-                            .fillColor(0x33FF0000)
+                            .strokeColor(liveCircleStroke)
+                            .fillColor(liveCircleFill)
                     )
                     
                     // Move camera to marker

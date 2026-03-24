@@ -196,6 +196,9 @@ class AlertService : Service() {
             }
         }
         
+        // Normalize timestamp to milliseconds (Python sends seconds)
+        val normalizedTimestamp = if (alert.timestamp < 1000000000000L) alert.timestamp * 1000 else alert.timestamp
+        
         val dangerLevel = DetectionHistory.calculateDangerLevel(alert.animal_type, alert.confidence)
         
         val detection = DetectionHistory(
@@ -205,7 +208,7 @@ class AlertService : Service() {
             location = alert.location,
             latitude = latitude,
             longitude = longitude,
-            timestamp = alert.timestamp,
+            timestamp = normalizedTimestamp,
             dangerLevel = dangerLevel
         )
         

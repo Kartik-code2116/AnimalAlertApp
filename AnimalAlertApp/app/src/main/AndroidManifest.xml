@@ -23,9 +23,9 @@
     <application
         android:allowBackup="true"
         android:usesCleartextTraffic="true"
-        android:icon="@drawable/wildtrack5_o"
+        android:icon="@drawable/animal_detection"
         android:label="@string/app_name"
-        android:roundIcon="@drawable/wildtrack5_o"
+        android:roundIcon="@drawable/animal_detection"
         android:supportsRtl="true"
         android:theme="@style/Theme.AnimalAlert">
 

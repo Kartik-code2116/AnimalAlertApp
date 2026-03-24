@@ -1,5 +1,7 @@
 package com.example.animalalert.ui.adapters
 
+import android.location.Address
+import android.location.Geocoder
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -59,10 +61,30 @@ class DetectionAdapter(
         fun bind(detection: DetectionHistory) {
             tvAnimalType.text = detection.animalType ?: "Unknown Animal"
             tvConfidence.text = "Confidence: ${detection.confidence}%"
-            tvLocation.text = detection.location ?: "Location: N/A"
+            
+            // Try to get a readable address if coordinates are provided
+            val displayLocation = if (detection.latitude != null && detection.longitude != null) {
+                try {
+                    val geocoder = Geocoder(itemView.context, Locale.getDefault())
+                    val addresses = geocoder.getFromLocation(detection.latitude, detection.longitude, 1)
+                    if (addresses != null && addresses.isNotEmpty()) {
+                        val address = addresses[0]
+                        "${address.locality ?: ""}, ${address.adminArea ?: ""}".trim { it <= ' ' || it == ',' }
+                    } else {
+                        detection.location ?: "Location: N/A"
+                    }
+                } catch (e: Exception) {
+                    detection.location ?: "Location: N/A"
+                }
+            } else {
+                detection.location ?: "Location: N/A"
+            }
+            
+            tvLocation.text = displayLocation
             
             val dateFormat = SimpleDateFormat("dd MMM yyyy, HH:mm", Locale.getDefault())
-            tvTime.text = dateFormat.format(Date(detection.timestamp))
+            val normalizedTime = if (detection.timestamp < 1000000000000L) detection.timestamp * 1000 else detection.timestamp
+            tvTime.text = dateFormat.format(Date(normalizedTime))
             
             tvDangerLevel.text = "Danger: ${detection.getDangerLevelText()}"
             tvDangerLevel.setTextColor(detection.getDangerColor())

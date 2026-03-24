@@ -38,7 +38,8 @@ class SMSHelper(private val context: Context) {
 
     private fun buildSMSMessage(alert: AlertResponse): String {
         val dateFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
-        return "🚨 Animal Alert: ${alert.animal_type ?: "Unknown"} detected (${alert.confidence}%) at ${dateFormat.format(Date(alert.timestamp))}. Location: ${alert.location ?: "N/A"}"
+        val time = dateFormat.format(Date(if (alert.timestamp < 1000000000000L) alert.timestamp * 1000 else alert.timestamp))
+        return "🚨 Animal Alert: ${alert.animal_type ?: "Unknown"} detected (${alert.confidence}%) at $time. Location: ${alert.location ?: "N/A"}"
     }
 
     private fun hasSMSPermission(): Boolean {

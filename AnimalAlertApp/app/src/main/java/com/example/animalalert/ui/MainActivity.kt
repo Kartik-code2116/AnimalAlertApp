@@ -144,6 +144,24 @@ class MainActivity : AppCompatActivity() {
     override fun onNewIntent(intent: Intent?) {
         super.onNewIntent(intent)
         setIntent(intent)
-        // Handle new intents if needed
+        
+        intent?.let {
+            val showDetection = it.getBooleanExtra("show_detection", false)
+            if (showDetection) {
+                // Navigate to MapFragment with detection data
+                val mapFragment = MapFragment().apply {
+                    arguments = Bundle().apply {
+                        putDouble("detection_lat", it.getDoubleExtra("detection_lat", 0.0))
+                        putDouble("detection_lng", it.getDoubleExtra("detection_lng", 0.0))
+                        putString("detection_location", it.getStringExtra("detection_location"))
+                        putString("detection_animal_type", it.getStringExtra("detection_animal_type"))
+                        putFloat("detection_confidence", it.getFloatExtra("detection_confidence", 0f))
+                        putInt("detection_danger", it.getIntExtra("detection_danger", 1))
+                    }
+                }
+                loadFragment(mapFragment)
+                binding.bottomNavigation.selectedItemId = R.id.nav_map
+            }
+        }
     }
 }

@@ -155,15 +155,64 @@ class AlertSystemFragment : Fragment() {
             binding.tvStatus.text = "⚠️ ALERT: Animal Detected!"
             binding.tvAnimalType.text = "Type: ${alert.animal_type ?: "Unknown"}"
             binding.tvConfidence.text = "Confidence: ${alert.confidence}%"
-            binding.tvLocation.text = "Location: ${alert.location ?: "N/A"}"
+            
+            // Geocode location if possible
+            var displayLocation = alert.location ?: "N/A"
+            if (alert.location != null) {
+                val parts = alert.location.split(",")
+                if (parts.size == 2) {
+                    try {
+                        val lat = parts[0].trim().toDouble()
+                        val lng = parts[1].trim().toDouble()
+                        val geocoder = android.location.Geocoder(requireContext(), java.util.Locale.getDefault())
+                        val addresses = geocoder.getFromLocation(lat, lng, 1)
+                        if (addresses != null && addresses.isNotEmpty()) {
+                            val address = addresses[0]
+                            displayLocation = "${address.locality ?: ""}, ${address.adminArea ?: ""}".trim { it <= ' ' || it == ',' }
+                        }
+                    } catch (e: Exception) { }
+                }
+            }
+            
+            binding.tvLocation.text = "Location: $displayLocation"
             binding.cardAlert.visibility = View.VISIBLE
             binding.ivStatus.setImageResource(R.drawable.ic_alert_active)
             // History is written by AlertService. Here we only refresh UI list.
             loadRecentDetections()
+            
+            // Allow user to click the active alert to see it on map
+            binding.cardAlert.setOnClickListener {
+                if (alert.location != null) {
+                    val parts = alert.location.split(",")
+                    if (parts.size == 2) {
+                        try {
+                            val lat = parts[0].trim().toDouble()
+                            val lng = parts[1].trim().toDouble()
+                            val dangerLevel = DetectionHistory.calculateDangerLevel(alert.animal_type, alert.confidence)
+                            
+                            val intent = Intent(requireContext(), MainActivity::class.java).apply {
+                                putExtra("show_detection", true)
+                                putExtra("detection_lat", lat)
+                                putExtra("detection_lng", lng)
+                                putExtra("detection_location", alert.location)
+                                putExtra("detection_animal_type", alert.animal_type)
+                                putExtra("detection_confidence", alert.confidence)
+                                putExtra("detection_danger", dangerLevel)
+                            }
+                            startActivity(intent)
+                        } catch (e: Exception) {
+                             Toast.makeText(requireContext(), "Location not parseable", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                } else {
+                    Toast.makeText(requireContext(), "Location unavailable for this alert", Toast.LENGTH_SHORT).show()
+                }
+            }
         } else {
             binding.tvStatus.text = "✅ System Active - No Alerts"
             binding.cardAlert.visibility = View.GONE
             binding.ivStatus.setImageResource(R.drawable.ic_alert_inactive)
+            binding.cardAlert.setOnClickListener(null)
         }
     }
 
