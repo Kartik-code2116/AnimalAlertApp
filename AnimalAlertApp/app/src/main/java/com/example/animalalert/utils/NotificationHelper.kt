@@ -47,14 +47,14 @@ class NotificationHelper(private val context: Context) {
         )
 
         val notification = NotificationCompat.Builder(context, CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_alert_active)
+            .setSmallIcon(R.drawable.ic_alert)
             .setContentTitle("🚨 Animal Detected!")
             .setContentText("${alert.animal_type ?: "Unknown animal"} detected with ${alert.confidence}% confidence")
             .setStyle(NotificationCompat.BigTextStyle()
                 .bigText("Animal Type: ${alert.animal_type ?: "Unknown"}\n" +
                         "Confidence: ${alert.confidence}%\n" +
                         "Location: ${alert.location ?: "N/A"}\n" +
-                        "Time: ${java.text.SimpleDateFormat("HH:mm:ss", java.util.Locale.getDefault()).format(java.util.Date(alert.timestamp))}"))
+                        "Time: ${java.text.SimpleDateFormat("HH:mm:ss", java.util.Locale.getDefault()).format(java.util.Date(if (alert.timestamp < 1000000000000L) alert.timestamp * 1000 else alert.timestamp))}"))
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setDefaults(NotificationCompat.DEFAULT_ALL)
             .setContentIntent(pendingIntent)

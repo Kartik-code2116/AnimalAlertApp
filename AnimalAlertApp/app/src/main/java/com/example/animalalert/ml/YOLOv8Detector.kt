@@ -270,18 +270,29 @@ class YOLOv8Detector(private val context: Context) {
         return detections
     }
 
-    private fun nonMaximumSuppression(detections: List<Detection>, iouThreshold: Float = 0.5f): List<Detection> {
+    private fun nonMaximumSuppression(
+        detections: List<Detection>,
+        iouThreshold: Float = 0.5f
+    ): List<Detection> {
         if (detections.isEmpty()) return emptyList()
 
-        val sortedDetections = detections.sortedByDescending { it.confidence }
-        val current = sortedDetections.first()
+        val sorted = detections.sortedByDescending { it.confidence }.toMutableList()
+        val selected = mutableListOf<Detection>()
 
-        // Keep detections that don't overlap significantly with the best one
-        val remaining = sortedDetections.drop(1).filter { det ->
-            calculateIOU(current, det) < iouThreshold
+        while (sorted.isNotEmpty()) {
+            val current = sorted.removeAt(0)
+            selected.add(current)
+
+            val iterator = sorted.iterator()
+            while (iterator.hasNext()) {
+                val candidate = iterator.next()
+                if (calculateIOU(current, candidate) >= iouThreshold) {
+                    iterator.remove()
+                }
+            }
         }
 
-        return listOf(current) + nonMaximumSuppression(remaining, iouThreshold)
+        return selected
     }
 
     private fun calculateIOU(det1: Detection, det2: Detection): Float {

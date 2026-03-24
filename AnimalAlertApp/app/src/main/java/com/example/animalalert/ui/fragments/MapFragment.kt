@@ -100,7 +100,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         val latLng = LatLng(lat, lng)
         
         // Clear old markers
-        markers.forEach { it.remove() }
+        googleMap?.clear()
         markers.clear()
         
         // Get danger level text
@@ -113,14 +113,25 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             else -> "Unknown"
         }
         
-        // Add marker with danger info
+        // Add marker with danger info and explicitly RED color
         val marker = googleMap?.addMarker(
             MarkerOptions()
                 .position(latLng)
                 .title("Animal Detected: ${animalType ?: "Unknown"}")
                 .snippet("Confidence: ${confidence}% | Danger: $dangerText | Location: ${location ?: "N/A"}")
+                .icon(com.google.android.gms.maps.model.BitmapDescriptorFactory.defaultMarker(com.google.android.gms.maps.model.BitmapDescriptorFactory.HUE_RED))
         )
         marker?.let { markers.add(it) }
+        
+        // Add a red signal (danger zone circle)
+        googleMap?.addCircle(
+            com.google.android.gms.maps.model.CircleOptions()
+                .center(latLng)
+                .radius(150.0) // 150 meters
+                .strokeWidth(4f)
+                .strokeColor(android.graphics.Color.RED)
+                .fillColor(android.graphics.Color.argb(80, 255, 0, 0))
+        )
         
         // Move camera to marker
         googleMap?.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15f))
@@ -247,8 +258,8 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                     val lng = locationParts[1].trim().toDouble()
                     val latLng = LatLng(lat, lng)
                     
-                    // Clear old markers
-                    markers.forEach { it.remove() }
+                    // Clear old markers and circles
+                    googleMap?.clear()
                     markers.clear()
                     
                     // Add new marker
@@ -257,8 +268,19 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                             .position(latLng)
                             .title("Animal Detected: ${alert.animal_type ?: "Unknown"}")
                             .snippet("Confidence: ${alert.confidence}%")
+                            .icon(com.google.android.gms.maps.model.BitmapDescriptorFactory.defaultMarker(com.google.android.gms.maps.model.BitmapDescriptorFactory.HUE_RED))
                     )
                     marker?.let { markers.add(it) }
+                    
+                    // Add a red signal (danger zone circle)
+                    googleMap?.addCircle(
+                        com.google.android.gms.maps.model.CircleOptions()
+                            .center(latLng)
+                            .radius(150.0) // 150 meters
+                            .strokeWidth(4f)
+                            .strokeColor(android.graphics.Color.RED)
+                            .fillColor(android.graphics.Color.argb(80, 255, 0, 0))
+                    )
                     
                     // Move camera to marker
                     googleMap?.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15f))
@@ -275,7 +297,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             }
         } else {
             binding.tvStatus.text = "No active alerts"
-            markers.forEach { it.remove() }
+            googleMap?.clear()
             markers.clear()
         }
     }

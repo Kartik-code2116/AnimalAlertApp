@@ -85,8 +85,8 @@ class DashboardFragment : Fragment() {
     private fun handleQuickActionClick(view: View) {
         when (view.id) {
             R.id.card_start_monitoring -> {
-                Toast.makeText(requireContext(), "Starting monitoring...", Toast.LENGTH_SHORT).show()
-                // Add your monitoring start logic here
+                val intent = android.content.Intent(requireContext(), com.example.animalalert.ui.CameraDetectionActivity::class.java)
+                startActivity(intent)
             }
             R.id.card_view_map -> {
                 navigateToTab(R.id.nav_map)

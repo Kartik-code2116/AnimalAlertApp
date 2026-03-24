@@ -19,7 +19,6 @@ import com.example.animalalert.ui.MainActivity
 import com.example.animalalert.ui.adapters.DetectionAdapter
 import com.example.animalalert.utils.PreferenceManager
 import kotlinx.coroutines.*
-import java.util.*
 
 class AlertSystemFragment : Fragment() {
 
@@ -29,7 +28,6 @@ class AlertSystemFragment : Fragment() {
     private val scope = CoroutineScope(Dispatchers.Main + job)
     private lateinit var preferenceManager: PreferenceManager
     private lateinit var detectionAdapter: DetectionAdapter
-    private var lastDetectionId: String? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -152,52 +150,13 @@ class AlertSystemFragment : Fragment() {
             binding.tvLocation.text = "Location: ${alert.location ?: "N/A"}"
             binding.cardAlert.visibility = View.VISIBLE
             binding.ivStatus.setImageResource(R.drawable.ic_alert_active)
-            
-            // Save to detection history (avoid duplicates)
-            val detectionId = "${alert.timestamp}_${alert.animal_type}"
-            if (detectionId != lastDetectionId) {
-                saveDetectionToHistory(alert)
-                lastDetectionId = detectionId
-                loadRecentDetections() // Refresh list
-            }
+            // History is written by AlertService. Here we only refresh UI list.
+            loadRecentDetections()
         } else {
             binding.tvStatus.text = "✅ System Active - No Alerts"
             binding.cardAlert.visibility = View.GONE
             binding.ivStatus.setImageResource(R.drawable.ic_alert_inactive)
         }
-    }
-    
-    private fun saveDetectionToHistory(alert: AlertResponse) {
-        // Parse location if available
-        var latitude: Double? = null
-        var longitude: Double? = null
-        
-        alert.location?.let { location ->
-            val parts = location.split(",")
-            if (parts.size == 2) {
-                try {
-                    latitude = parts[0].trim().toDouble()
-                    longitude = parts[1].trim().toDouble()
-                } catch (e: Exception) {
-                    // Location format not valid
-                }
-            }
-        }
-        
-        val dangerLevel = DetectionHistory.calculateDangerLevel(alert.animal_type, alert.confidence)
-        
-        val detection = DetectionHistory(
-            id = UUID.randomUUID().toString(),
-            animalType = alert.animal_type,
-            confidence = alert.confidence,
-            location = alert.location,
-            latitude = latitude,
-            longitude = longitude,
-            timestamp = alert.timestamp,
-            dangerLevel = dangerLevel
-        )
-        
-        preferenceManager.addDetectionHistory(detection)
     }
 
     override fun onDestroyView() {

@@ -45,6 +45,16 @@
                 android:padding="6dp"
                 android:background="#E0E0E0"
                 android:textColor="#333333" />
+
+            <ImageButton
+                android:id="@+id/btnDelete"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_marginStart="8dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@android:drawable/ic_menu_delete"
+                app:tint="#D32F2F"
+                android:contentDescription="Delete detection" />
         </LinearLayout>
 
         <TextView

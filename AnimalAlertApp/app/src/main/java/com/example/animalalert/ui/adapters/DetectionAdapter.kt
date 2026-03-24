@@ -13,7 +13,8 @@ import java.util.*
 
 class DetectionAdapter(
     private var detections: List<DetectionHistory>,
-    private val onItemClick: (DetectionHistory) -> Unit
+    private val onItemClick: (DetectionHistory) -> Unit,
+    private val onDeleteClick: (DetectionHistory) -> Unit
 ) : RecyclerView.Adapter<DetectionAdapter.DetectionViewHolder>() {
 
     fun updateData(newDetections: List<DetectionHistory>) {
@@ -53,14 +54,22 @@ class DetectionAdapter(
         private val tvLocation: TextView = itemView.findViewById(R.id.tvLocation)
         private val tvTime: TextView = itemView.findViewById(R.id.tvTime)
         private val tvDangerLevel: TextView = itemView.findViewById(R.id.tvDangerLevel)
+        private val btnDelete: android.widget.ImageButton = itemView.findViewById(R.id.btnDelete)
 
         fun bind(detection: DetectionHistory) {
             tvAnimalType.text = detection.animalType ?: "Unknown Animal"
             tvConfidence.text = "Confidence: ${detection.confidence}%"
             tvLocation.text = detection.location ?: "Location: N/A"
             
+            // Normalize timestamp to milliseconds if it is coming from backend as seconds
+            var timeMs = detection.timestamp
+            // 1 trillion milliseconds is year 2001
+            if (timeMs < 1000000000000L) {
+                timeMs *= 1000
+            }
+            
             val dateFormat = SimpleDateFormat("dd MMM yyyy, HH:mm", Locale.getDefault())
-            tvTime.text = dateFormat.format(Date(detection.timestamp))
+            tvTime.text = dateFormat.format(Date(timeMs))
             
             tvDangerLevel.text = "Danger: ${detection.getDangerLevelText()}"
             tvDangerLevel.setTextColor(detection.getDangerColor())
@@ -71,6 +80,10 @@ class DetectionAdapter(
             
             itemView.setOnClickListener {
                 onItemClick(detection)
+            }
+            
+            btnDelete.setOnClickListener {
+                onDeleteClick(detection)
             }
         }
     }
