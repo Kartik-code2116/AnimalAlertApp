@@ -5,25 +5,21 @@
     <item
         android:id="@+id/action_refresh"
         android:title="Refresh"
-        android:icon="@drawable/ic_refresh"
-        app:showAsAction="ifRoom" />
+        app:showAsAction="never" />
 
     <item
         android:id="@+id/action_scan_now"
         android:title="Scan Now"
-        android:icon="@drawable/ic_scan"
         app:showAsAction="never" />
 
     <item
         android:id="@+id/action_notifications"
         android:title="Notifications"
-        android:icon="@drawable/ic_notifications"
         app:showAsAction="never" />
 
     <item
         android:id="@+id/action_emergency_contacts"
         android:title="Emergency Contacts"
-        android:icon="@drawable/ic_emergency"
         app:showAsAction="never" />
 
     <item

@@ -19,7 +19,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:title="Animal Alert App"
         app:titleTextColor="@color/white"
-        app:menu="@menu/bottom_navigation_menu">
+        app:menu="@menu/toolbar_menu">
 
         <ImageView
             android:layout_width="32dp"

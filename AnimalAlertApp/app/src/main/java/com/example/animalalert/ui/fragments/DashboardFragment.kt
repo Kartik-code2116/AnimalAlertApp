@@ -98,8 +98,20 @@ class DashboardFragment : Fragment() {
         val b = _binding ?: return
         // Header elements are part of the HTML phone mockup.
         val name = preferenceManager.getUserName().ifEmpty { "User" }
+        val greeting = getTimeBasedGreeting()
         b.tvUserName.text = "$name 👋"
+        b.tvTitle.text = greeting
         b.tvLiveBadge.text = "SYSTEM ACTIVE · 3 CAMERAS"
+    }
+
+    private fun getTimeBasedGreeting(): String {
+        val hour = java.util.Calendar.getInstance().get(java.util.Calendar.HOUR_OF_DAY)
+        return when (hour) {
+            in 5..11 -> "Good Morning,"
+            in 12..17 -> "Good Afternoon,"
+            in 18..21 -> "Good Evening,"
+            else -> "Good Night,"
+        }
     }
 
     private fun updateStats(activeCount: Int) {

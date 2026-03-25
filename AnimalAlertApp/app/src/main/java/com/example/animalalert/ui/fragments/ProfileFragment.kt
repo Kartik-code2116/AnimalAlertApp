@@ -9,6 +9,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
@@ -80,7 +81,11 @@ class ProfileFragment : Fragment() {
         binding.btnLogout.setOnClickListener {
             logout()
         }
-        
+
+        binding.btnEditProfile.setOnClickListener {
+            showEditProfileDialog()
+        }
+
         binding.btnRefreshStats.setOnClickListener {
             loadUserData()
             Toast.makeText(context, "Statistics refreshed", Toast.LENGTH_SHORT).show()
@@ -154,6 +159,55 @@ class ProfileFragment : Fragment() {
         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         startActivity(intent)
         requireActivity().finish()
+    }
+
+    private fun showEditProfileDialog() {
+        val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_edit_profile, null)
+        val dialog = AlertDialog.Builder(requireContext())
+            .setView(dialogView)
+            .create()
+
+        val etName = dialogView.findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.etName)
+        val etEmail = dialogView.findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.etEmail)
+        val etPhone = dialogView.findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.etPhone)
+        val btnSave = dialogView.findViewById<com.google.android.material.button.MaterialButton>(R.id.btnSave)
+        val btnCancel = dialogView.findViewById<com.google.android.material.button.MaterialButton>(R.id.btnCancel)
+
+        // Pre-fill with current data
+        etName.setText(preferenceManager.getUserName())
+        etEmail.setText(preferenceManager.getUserEmail())
+        etPhone.setText(preferenceManager.getUserPhone())
+
+        btnSave.setOnClickListener {
+            val name = etName.text.toString().trim()
+            val email = etEmail.text.toString().trim()
+            val phone = etPhone.text.toString().trim()
+
+            if (name.isEmpty()) {
+                etName.error = "Name is required"
+                return@setOnClickListener
+            }
+
+            if (email.isNotEmpty() && !android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+                etEmail.error = "Invalid email format"
+                return@setOnClickListener
+            }
+
+            // Save to preferences
+            preferenceManager.saveUserData(name, email, phone)
+
+            // Refresh UI
+            loadUserData()
+
+            Toast.makeText(context, "Profile updated successfully", Toast.LENGTH_SHORT).show()
+            dialog.dismiss()
+        }
+
+        btnCancel.setOnClickListener {
+            dialog.dismiss()
+        }
+
+        dialog.show()
     }
 
     override fun onRequestPermissionsResult(

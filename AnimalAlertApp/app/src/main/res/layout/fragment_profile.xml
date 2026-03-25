@@ -31,7 +31,17 @@
                     android:layout_width="100dp"
                     android:layout_height="100dp"
                     android:src="@drawable/ic_profile"
-                    android:layout_marginBottom="16dp" />
+                    android:layout_marginBottom="12dp" />
+
+                <TextView
+                    android:id="@+id/tvUserName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="User Name"
+                    android:textColor="#E8EDF5"
+                    android:textSize="24sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="4dp" />
 
                 <TextView
                     android:id="@+id/tvUserEmail"
@@ -39,28 +49,41 @@
                     android:layout_height="wrap_content"
                     android:text="user@example.com"
                     android:textSize="14sp"
-                    android:textColor="#9AA5B8" />
+                    android:textColor="#9AA5B8"
+                    android:layout_marginBottom="16dp" />
 
-                <TextView
-                    android:id="@+id/tvUserName"
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnEditProfile"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="8dp"
-                    android:text="User Name"
-                    android:textColor="#E8EDF5"
-                    android:textSize="24sp"
-                    android:textStyle="bold" />
+                    android:layout_height="40dp"
+                    android:text="Edit Profile"
+                    android:textSize="12sp"
+                    android:textColor="#FFFFFF"
+                    app:cornerRadius="20dp"
+                    android:backgroundTint="#2196F3"
+                    style="@style/Widget.MaterialComponents.Button" />
 
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
+        <!-- Account Information Section -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Account Information"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="#E8EDF5"
+            android:layout_marginStart="4dp"
+            android:layout_marginBottom="12dp" />
+
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="20dp"
-            app:cardCornerRadius="16dp"
-            app:cardElevation="4dp"
-            android:background="#161C25">
+            android:layout_marginBottom="16dp"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="2dp"
+            app:cardBackgroundColor="#161C25">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -131,28 +154,30 @@
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
+        <!-- Statistics Section -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Detection Statistics"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="#E8EDF5"
+            android:layout_marginStart="4dp"
+            android:layout_marginBottom="12dp" />
+
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="20dp"
-            app:cardCornerRadius="16dp"
-            app:cardElevation="4dp"
-            android:background="#161C25">
+            android:layout_marginBottom="16dp"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="2dp"
+            app:cardBackgroundColor="#161C25">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="20dp">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Detection Statistics"
-                    android:textSize="18sp"
-                    android:textStyle="bold"
-                    android:textColor="#E8EDF5"
-                    android:layout_marginBottom="20dp" />
+                android:padding="16dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -217,54 +242,73 @@
                     </LinearLayout>
                 </LinearLayout>
 
-                <Button
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnRefreshStats"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    android:layout_height="48dp"
                     android:text="Refresh Statistics"
-                    android:background="@drawable/button_background"
-                    android:textColor="#FFFFFF" />
+                    android:textSize="14sp"
+                    android:textColor="#FFFFFF"
+                    app:cornerRadius="8dp"
+                    android:backgroundTint="#2A3441"
+                    style="@style/Widget.MaterialComponents.Button" />
 
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
+        <!-- Notifications Section -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Notification Preferences"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="#E8EDF5"
+            android:layout_marginStart="4dp"
+            android:layout_marginBottom="12dp" />
+
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="20dp"
-            app:cardCornerRadius="16dp"
-            app:cardElevation="4dp"
-            android:background="#161C25">
+            android:layout_marginBottom="16dp"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="2dp"
+            app:cardBackgroundColor="#161C25">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="20dp">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Notification Settings"
-                    android:textSize="18sp"
-                    android:textStyle="bold"
-                    android:textColor="#E8EDF5"
-                    android:layout_marginBottom="16dp" />
+                android:padding="16dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:gravity="center_vertical"
-                    android:layout_marginBottom="12dp">
+                    android:layout_marginBottom="16dp">
 
-                    <TextView
+                    <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="Enable Notifications"
-                        android:textSize="16sp"
-                        android:textColor="#E8EDF5" />
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Enable Notifications"
+                            android:textSize="16sp"
+                            android:textColor="#E8EDF5"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Receive alerts about animal detections"
+                            android:textSize="12sp"
+                            android:textColor="#9AA5B8" />
+                    </LinearLayout>
 
                     <androidx.appcompat.widget.SwitchCompat
                         android:id="@+id/switchNotifications"
@@ -343,15 +387,17 @@
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
-        <Button
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/btnLogout"
             android:layout_width="match_parent"
-            android:layout_height="60dp"
+            android:layout_height="56dp"
             android:text="Logout"
-            android:textSize="18sp"
+            android:textSize="16sp"
             android:textStyle="bold"
-            android:background="@drawable/button_stop_background"
-            android:textColor="#FFFFFF" />
+            android:textColor="#FFFFFF"
+            app:cornerRadius="12dp"
+            android:backgroundTint="#DC3545"
+            style="@style/Widget.MaterialComponents.Button" />
 
     </LinearLayout>
 </ScrollView>
