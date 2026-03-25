@@ -1,13 +1,10 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-
-    <!-- MAIN APP THEME (MUST extend Theme.AppCompat.*) -->
     <style name="Theme.AnimalAlert" parent="Theme.MaterialComponents.DayNight.NoActionBar">
         <item name="colorPrimary">#0F1520</item>
         <item name="colorPrimaryDark">#0A0C10</item>
         <item name="colorSecondary">#00E87A</item>
         <item name="colorAccent">#00E87A</item>
         <item name="android:statusBarColor">@color/toolbar_bg</item>
-        <item name="android:windowLightStatusBar" tools:targetApi="m">true</item>
+        <item name="android:windowLightStatusBar">false</item>
     </style>
-
 </resources>

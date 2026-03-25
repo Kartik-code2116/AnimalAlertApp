@@ -9,4 +9,8 @@
     <color name="settings_section_label">#00E87A</color>
     <color name="settings_danger">#FF6B6B</color>
     <color name="settings_chevron">#4B5563</color>
+
+    <!-- Toolbar Colors -->
+    <color name="toolbar_bg">#0F1520</color>
+    <color name="toolbar_text">#FFFFFF</color>
 </resources>
