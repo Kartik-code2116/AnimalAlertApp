@@ -17,10 +17,12 @@ import androidx.fragment.app.Fragment
 import com.example.animalalert.R
 import com.example.animalalert.Service.AlertService
 import com.example.animalalert.databinding.ActivityMainBinding
+import androidx.appcompat.app.AppCompatDelegate
 import com.example.animalalert.ui.fragments.AlertSystemFragment
 import com.example.animalalert.ui.fragments.DashboardFragment
 import com.example.animalalert.ui.fragments.MapFragment
 import com.example.animalalert.ui.fragments.ProfileFragment
+import com.example.animalalert.ui.fragments.SettingsFragment
 import com.example.animalalert.utils.PreferenceManager
 
 class MainActivity : AppCompatActivity() {
@@ -40,12 +42,15 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
+
+        // Apply saved theme BEFORE setContentView to avoid flicker
+        preferenceManager = PreferenceManager(this)
+        applyThemeSetting()
+
         setContentView(binding.root)
 
         // Setup toolbar as support action bar
         setSupportActionBar(binding.toolbar)
-
-        preferenceManager = PreferenceManager(this)
 
         // Check if logged in
         if (!preferenceManager.isLoggedIn()) {
@@ -270,8 +275,22 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun openSettings() {
-        Toast.makeText(this, "Settings coming soon", Toast.LENGTH_SHORT).show()
-        // TODO: Navigate to settings fragment
+        loadFragment(SettingsFragment())
+        // Deselect all bottom-nav items (Menu is not Kotlin Iterable)
+        val menu = binding.bottomNavigation.menu
+        menu.setGroupCheckable(0, true, false)
+        for (i in 0 until menu.size()) menu.getItem(i).isChecked = false
+        menu.setGroupCheckable(0, true, true)
+    }
+
+    /** Apply dark / light / system theme from saved preference. */
+    fun applyThemeSetting() {
+        val mode = when {
+            preferenceManager.isFollowSystemTheme() -> AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
+            preferenceManager.isDarkMode()          -> AppCompatDelegate.MODE_NIGHT_YES
+            else                                    -> AppCompatDelegate.MODE_NIGHT_NO
+        }
+        AppCompatDelegate.setDefaultNightMode(mode)
     }
 
     private fun showHelp() {

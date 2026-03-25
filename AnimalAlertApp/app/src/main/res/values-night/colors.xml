@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Settings Page Colors (Dark Mode) -->
+    <color name="settings_bg">#0A0C10</color>
+    <color name="settings_card_bg">#161B26</color>
+    <color name="settings_text_primary">#E8ECF0</color>
+    <color name="settings_text_secondary">#9CA3AF</color>
+    <color name="settings_divider">#2A2F3A</color>
+    <color name="settings_section_label">#00E87A</color>
+    <color name="settings_danger">#FF6B6B</color>
+    <color name="settings_chevron">#4B5563</color>
+</resources>

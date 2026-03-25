@@ -25,6 +25,18 @@ class PreferenceManager(context: Context) {
         private const val KEY_IN_APP_NOTIFICATION_ENABLED = "in_app_notification_enabled"
         private const val KEY_DETECTION_HISTORY = "detection_history"
         private const val MAX_HISTORY_SIZE = 50 // Keep last 50 detections
+
+        // Settings
+        const val KEY_DARK_MODE = "dark_mode"
+        const val KEY_FOLLOW_SYSTEM_THEME = "follow_system_theme"
+        const val KEY_IN_APP_SOUND = "in_app_sound"
+        const val KEY_AUTO_START_SERVICE = "auto_start_service"
+        const val KEY_DANGER_ONLY = "danger_only"
+        const val KEY_CONFIDENCE_THRESHOLD = "confidence_threshold"
+        const val KEY_POLL_INTERVAL_SEC = "poll_interval_sec"
+        const val KEY_SHOW_HISTORY_ON_MAP = "show_history_on_map"
+        const val KEY_AUTO_CENTER_MAP = "auto_center_map"
+        const val KEY_SERVER_URL = "server_url"
     }
     
     private val gson = Gson()
@@ -145,6 +157,41 @@ class PreferenceManager(context: Context) {
     fun isInAppNotificationEnabled(): Boolean {
         return prefs.getBoolean(KEY_IN_APP_NOTIFICATION_ENABLED, true)
     }
+
+    // ── Theme ────────────────────────────────────────────────
+    fun setDarkMode(enabled: Boolean) { prefs.edit().putBoolean(KEY_DARK_MODE, enabled).apply() }
+    fun isDarkMode(): Boolean = prefs.getBoolean(KEY_DARK_MODE, false)
+
+    fun setFollowSystemTheme(enabled: Boolean) { prefs.edit().putBoolean(KEY_FOLLOW_SYSTEM_THEME, enabled).apply() }
+    fun isFollowSystemTheme(): Boolean = prefs.getBoolean(KEY_FOLLOW_SYSTEM_THEME, true)
+
+    // ── Sound ───────────────────────────────────────────────
+    fun setInAppSound(enabled: Boolean) { prefs.edit().putBoolean(KEY_IN_APP_SOUND, enabled).apply() }
+    fun isInAppSoundEnabled(): Boolean = prefs.getBoolean(KEY_IN_APP_SOUND, true)
+
+    // ── Alert System ─────────────────────────────────────────
+    fun setAutoStartService(enabled: Boolean) { prefs.edit().putBoolean(KEY_AUTO_START_SERVICE, enabled).apply() }
+    fun isAutoStartService(): Boolean = prefs.getBoolean(KEY_AUTO_START_SERVICE, true)
+
+    fun setDangerOnly(enabled: Boolean) { prefs.edit().putBoolean(KEY_DANGER_ONLY, enabled).apply() }
+    fun isDangerOnly(): Boolean = prefs.getBoolean(KEY_DANGER_ONLY, false)
+
+    fun setConfidenceThreshold(value: Int) { prefs.edit().putInt(KEY_CONFIDENCE_THRESHOLD, value).apply() }
+    fun getConfidenceThreshold(): Int = prefs.getInt(KEY_CONFIDENCE_THRESHOLD, 60)
+
+    fun setPollIntervalSec(value: Int) { prefs.edit().putInt(KEY_POLL_INTERVAL_SEC, value).apply() }
+    fun getPollIntervalSec(): Int = prefs.getInt(KEY_POLL_INTERVAL_SEC, 3)
+
+    // ── Map ─────────────────────────────────────────────────
+    fun setShowHistoryOnMap(enabled: Boolean) { prefs.edit().putBoolean(KEY_SHOW_HISTORY_ON_MAP, enabled).apply() }
+    fun isShowHistoryOnMap(): Boolean = prefs.getBoolean(KEY_SHOW_HISTORY_ON_MAP, true)
+
+    fun setAutoCenterMap(enabled: Boolean) { prefs.edit().putBoolean(KEY_AUTO_CENTER_MAP, enabled).apply() }
+    fun isAutoCenterMap(): Boolean = prefs.getBoolean(KEY_AUTO_CENTER_MAP, true)
+
+    // ── Server ───────────────────────────────────────────────
+    fun setServerUrl(url: String) { prefs.edit().putString(KEY_SERVER_URL, url).apply() }
+    fun getServerUrl(): String = prefs.getString(KEY_SERVER_URL, "http://192.168.1.100:5000") ?: "http://192.168.1.100:5000"
     
     // Detection History — synchronized to prevent races between
     // AlertService (IO thread) and UI fragments (main thread).
