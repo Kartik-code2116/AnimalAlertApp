@@ -84,21 +84,10 @@ dependencies {
     // ConstraintLayout
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
 
-    // CameraX for camera functionality
-    implementation("androidx.camera:camera-core:1.3.1")
-    implementation("androidx.camera:camera-camera2:1.3.1")
-    implementation("androidx.camera:camera-lifecycle:1.3.1")
-    implementation("androidx.camera:camera-view:1.3.1")
 
-    // TensorFlow Lite for ML model inference
-    implementation("org.tensorflow:tensorflow-lite:2.14.0")
-    implementation("org.tensorflow:tensorflow-lite-gpu:2.14.0")
-    implementation("org.tensorflow:tensorflow-lite-support:0.4.4")
 
-    // PyTorch Mobile (alternative if using .pt directly)
-    implementation("org.pytorch:pytorch_android:1.13.1")
-    implementation("org.pytorch:pytorch_android_torchvision:1.13.1")
-
-    // Image processing
-    implementation("androidx.camera:camera-extensions:1.3.1")
+    // Testing
+    testImplementation("junit:junit:4.13.2")
+    androidTestImplementation("androidx.test.ext:junit:1.1.5")
+    androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
 }

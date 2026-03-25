@@ -14,7 +14,7 @@ import com.example.animalalert.databinding.FragmentAlertSystemBinding
 import com.example.animalalert.model.AlertResponse
 import com.example.animalalert.model.DetectionHistory
 import com.example.animalalert.network.RetrofitClient
-import com.example.animalalert.ui.CameraDetectionActivity
+
 import com.example.animalalert.ui.MainActivity
 import com.example.animalalert.ui.adapters.DetectionAdapter
 import com.example.animalalert.utils.PreferenceManager
@@ -64,8 +64,7 @@ class AlertSystemFragment : Fragment() {
     }
     
     private fun openCameraDetection() {
-        val intent = Intent(requireContext(), CameraDetectionActivity::class.java)
-        startActivity(intent)
+        Toast.makeText(requireContext(), "External camera server in use", Toast.LENGTH_SHORT).show()
     }
     
     private fun setupRecyclerView() {

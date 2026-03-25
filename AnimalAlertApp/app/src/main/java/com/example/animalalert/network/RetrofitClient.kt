@@ -12,7 +12,7 @@ object RetrofitClient {
      * Set to your computer's local IP Address.
      * Use 192.168.1.21 for Wi-Fi connected devices.
      */
-    private const val BASE_URL = "http://192.168.1.21:5000/"
+    private const val BASE_URL = "http://10.92.33.240:5000/"
 
     private val httpClient: OkHttpClient by lazy {
         val logging = HttpLoggingInterceptor().apply {

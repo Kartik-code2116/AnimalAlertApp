@@ -34,22 +34,22 @@
                     android:layout_marginBottom="16dp" />
 
                 <TextView
-                    android:id="@+id/tvUserName"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="User Name"
-                    android:textSize="24sp"
-                    android:textStyle="bold"
-                    android:textColor="#333333"
-                    android:layout_marginBottom="8dp" />
-
-                <TextView
                     android:id="@+id/tvUserEmail"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="user@example.com"
                     android:textSize="14sp"
                     android:textColor="#666666" />
+
+                <TextView
+                    android:id="@+id/tvUserName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="8dp"
+                    android:text="User Name"
+                    android:textColor="#333333"
+                    android:textSize="24sp"
+                    android:textStyle="bold" />
 
             </LinearLayout>
         </androidx.cardview.widget.CardView>

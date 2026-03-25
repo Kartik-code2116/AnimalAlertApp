@@ -63,8 +63,27 @@ class PreferenceManager(context: Context) {
         prefs.edit().putInt(KEY_TOTAL_DETECTIONS, current + 1).apply()
     }
 
+    fun decrementTotalDetections() {
+        val current = prefs.getInt(KEY_TOTAL_DETECTIONS, 0)
+        if (current > 0) {
+            prefs.edit().putInt(KEY_TOTAL_DETECTIONS, current - 1).apply()
+        }
+    }
+
     fun getTotalDetections(): Int {
         return prefs.getInt(KEY_TOTAL_DETECTIONS, 0)
+    }
+
+    fun decrementTodayDetections() {
+        val today = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault()).format(java.util.Date())
+        val lastDate = prefs.getString(KEY_LAST_DETECTION_DATE, "")
+
+        if (lastDate == today) {
+            val current = prefs.getInt(KEY_TODAY_DETECTIONS, 0)
+            if (current > 0) {
+                prefs.edit().putInt(KEY_TODAY_DETECTIONS, current - 1).apply()
+            }
+        }
     }
 
     fun incrementTodayDetections() {
@@ -169,9 +188,25 @@ class PreferenceManager(context: Context) {
     fun removeDetectionHistory(detectionId: String) {
         synchronized(historyLock) {
             val history = getDetectionHistoryInternal().toMutableList()
-            history.removeAll { it.id == detectionId }
-            val json = gson.toJson(history)
-            prefs.edit().putString(KEY_DETECTION_HISTORY, json).commit()
+            val detectionToRemove = history.find { it.id == detectionId }
+            
+            if (detectionToRemove != null) {
+                // Decrement total count
+                decrementTotalDetections()
+                
+                // Decrement today's count if it was from today
+                val dateFormat = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
+                val today = dateFormat.format(java.util.Date())
+                val detectionDate = dateFormat.format(java.util.Date(detectionToRemove.timestamp))
+                
+                if (today == detectionDate) {
+                    decrementTodayDetections()
+                }
+                
+                history.remove(detectionToRemove)
+                val json = gson.toJson(history)
+                prefs.edit().putString(KEY_DETECTION_HISTORY, json).commit()
+            }
         }
     }
 }
