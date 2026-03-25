@@ -69,22 +69,21 @@
                         app:tint="@color/accent" />
 
                     <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
                         android:id="@+id/tvLiveBadge"
-                        android:text="SYSTEM ACTIVE · 3 CAMERAS"
-                        android:textColor="#00E87A"
-                        android:textSize="13sp" />
-
-                    <TextView
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1" />
+                        android:layout_weight="1"
+                        android:text="SYSTEM ACTIVE · 3 CAMERAS"
+                        android:textColor="#00E87A"
+                        android:textSize="13sp"
+                        android:maxLines="1"
+                        android:ellipsize="end" />
 
                     <ImageView
                         android:layout_width="16dp"
                         android:layout_height="16dp"
                         android:layout_marginEnd="8dp"
+                        android:layout_marginStart="8dp"
                         android:src="@drawable/ic_map"
                         app:tint="@color/white" />
 
@@ -93,7 +92,8 @@
                         android:layout_height="wrap_content"
                         android:text="Online"
                         android:textColor="@color/white"
-                        android:textSize="13sp" />
+                        android:textSize="13sp"
+                        android:maxLines="1" />
                 </LinearLayout>
             </LinearLayout>
         </androidx.cardview.widget.CardView>
