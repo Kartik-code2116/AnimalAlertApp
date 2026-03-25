@@ -14,6 +14,7 @@ import com.example.animalalert.databinding.FragmentAlertSystemBinding
 import com.example.animalalert.model.AlertResponse
 import com.example.animalalert.model.DetectionHistory
 import com.example.animalalert.network.RetrofitClient
+import java.util.Locale
 
 import com.example.animalalert.ui.MainActivity
 import com.example.animalalert.ui.adapters.DetectionAdapter
@@ -151,9 +152,10 @@ class AlertSystemFragment : Fragment() {
 
     private fun updateUI(alert: AlertResponse) {
         if (alert.animal_detected) {
-            binding.tvStatus.text = "⚠️ ALERT: Animal Detected!"
-            binding.tvAnimalType.text = "Type: ${alert.animal_type ?: "Unknown"}"
-            binding.tvConfidence.text = "Confidence: ${alert.confidence}%"
+            val dangerLevel = DetectionHistory.calculateDangerLevel(alert.animal_type, alert.confidence)
+            binding.tvStatus.text = "⚠ LIVE THREAT"
+            binding.tvAnimalType.text = "${iconForAnimal(alert.animal_type)} ${alert.animal_type ?: "Unknown"}"
+            binding.tvConfidence.text = "Confidence: ${alert.confidence}% · LV $dangerLevel"
             
             // Geocode location if possible
             var displayLocation = alert.location ?: "N/A"
@@ -173,7 +175,8 @@ class AlertSystemFragment : Fragment() {
                 }
             }
             
-            binding.tvLocation.text = "Location: $displayLocation"
+            val relative = relativeTimeAgo(alert.timestamp)
+            binding.tvLocation.text = "📍 $displayLocation · $relative"
             binding.cardAlert.visibility = View.VISIBLE
             binding.ivStatus.setImageResource(R.drawable.ic_alert_active)
             // History is written by AlertService. Here we only refresh UI list.
@@ -208,10 +211,41 @@ class AlertSystemFragment : Fragment() {
                 }
             }
         } else {
-            binding.tvStatus.text = "✅ System Active - No Alerts"
+            binding.tvStatus.text = "✅ SYSTEM ACTIVE"
             binding.cardAlert.visibility = View.GONE
             binding.ivStatus.setImageResource(R.drawable.ic_alert_inactive)
             binding.cardAlert.setOnClickListener(null)
+        }
+    }
+
+    private fun relativeTimeAgo(timestamp: Long): String {
+        val normalizedTimestamp = if (timestamp < 1000000000000L) timestamp * 1000 else timestamp
+        val diffMs = System.currentTimeMillis() - normalizedTimestamp
+        if (diffMs < 0) return "now"
+
+        val minutes = diffMs / 60000L
+        if (minutes < 1) return "just now"
+        if (minutes < 60) return "${minutes} min ago"
+
+        val hours = minutes / 60
+        if (hours < 24) return "${hours} hr ago"
+
+        val days = hours / 24
+        return "${days} d ago"
+    }
+
+    private fun iconForAnimal(animalType: String?): String {
+        val type = animalType?.lowercase(Locale.getDefault()) ?: ""
+        return when {
+            type.contains("bear") -> "🐻"
+            type.contains("wolf") -> "🐺"
+            type.contains("lion") -> "🦁"
+            type.contains("tiger") -> "🐯"
+            type.contains("snake") || type.contains("cobra") -> "🐍"
+            type.contains("fox") -> "🦊"
+            type.contains("rabbit") -> "🐰"
+            type.contains("deer") -> "🦌"
+            else -> "🐾"
         }
     }
 

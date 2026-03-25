@@ -25,7 +25,7 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:padding="16dp"
-            android:background="#FFFFFF">
+            android:background="#161C25">
 
             <TextView
                 android:id="@+id/tvStatus"
@@ -34,7 +34,7 @@
                 android:text="Loading map..."
                 android:textSize="16sp"
                 android:textStyle="bold"
-                android:textColor="#333333"
+                android:textColor="#E8EDF5"
                 android:layout_marginBottom="8dp" />
 
             <!-- Map Index / Legend -->
@@ -51,7 +51,7 @@
                     android:text="🔴 Wild (Danger)"
                     android:textSize="13sp"
                     android:textStyle="bold"
-                    android:textColor="#333333"
+                    android:textColor="#E8EDF5"
                     android:layout_marginEnd="16dp" />
 
                 <TextView
@@ -60,7 +60,7 @@
                     android:text="🔵 Safe (Low Risk)"
                     android:textSize="13sp"
                     android:textStyle="bold"
-                    android:textColor="#333333" />
+                    android:textColor="#E8EDF5" />
             </LinearLayout>
 
             <LinearLayout
@@ -75,7 +75,8 @@
                     android:layout_weight="1"
                     android:text="My Location"
                     android:layout_marginEnd="8dp"
-                    android:background="@drawable/button_background" />
+                    android:background="@drawable/button_background"
+                    android:textColor="#FFFFFF" />
 
                 <Button
                     android:id="@+id/btnRefresh"
@@ -84,7 +85,8 @@
                     android:layout_weight="1"
                     android:text="Refresh"
                     android:layout_marginStart="8dp"
-                    android:background="@drawable/button_background" />
+                    android:background="@drawable/button_background"
+                    android:textColor="#FFFFFF" />
 
             </LinearLayout>
         </LinearLayout>

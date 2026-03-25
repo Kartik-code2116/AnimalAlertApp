@@ -8,6 +8,15 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.example.animalalert.R
 import com.example.animalalert.databinding.FragmentDashboardBinding
+import com.example.animalalert.model.DetectionHistory
+import com.example.animalalert.model.AlertResponse
+import com.example.animalalert.network.RetrofitClient
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.withContext
+import java.util.Locale
 
 class DashboardFragment : Fragment() {
 
@@ -15,6 +24,10 @@ class DashboardFragment : Fragment() {
     private val binding get() = _binding!!
     private lateinit var detectionAdapter: com.example.animalalert.ui.adapters.DetectionAdapter
     private lateinit var preferenceManager: com.example.animalalert.utils.PreferenceManager
+    private val job = SupervisorJob()
+    private val scope = CoroutineScope(Dispatchers.Main + job)
+
+    private var currentActiveCount: Int = 0
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -30,8 +43,10 @@ class DashboardFragment : Fragment() {
         preferenceManager = com.example.animalalert.utils.PreferenceManager(requireContext())
         setupViews()
         setupClickListeners()
-        updateStats()
         loadRecentDetections()
+        updateHeaderFromPrefs()
+        updateStats(activeCount = 0)
+        fetchLatestAlertAndUpdateActiveBanner()
     }
 
     private fun setupViews() {
@@ -52,7 +67,7 @@ class DashboardFragment : Fragment() {
             onDeleteClick = { detection ->
                 preferenceManager.removeDetectionHistory(detection.id)
                 loadRecentDetections()
-                updateStats()
+                updateStats(activeCount = currentActiveCount)
                 Toast.makeText(requireContext(), "Detection deleted", Toast.LENGTH_SHORT).show()
             }
         )
@@ -79,12 +94,21 @@ class DashboardFragment : Fragment() {
         }
     }
 
-    private fun updateStats() {
+    private fun updateHeaderFromPrefs() {
+        // Header elements are part of the HTML phone mockup.
+        val name = preferenceManager.getUserName().ifEmpty { "User" }
+        binding.tvUserName.text = "$name 👋"
+        binding.tvLiveBadge.text = "SYSTEM ACTIVE · 3 CAMERAS"
+    }
+
+    private fun updateStats(activeCount: Int) {
         val today = preferenceManager.getTodayDetections()
         val total = preferenceManager.getTotalDetections()
-        animateCounter(binding.tvDetectionsToday, today, 1000)
-        animateCounter(binding.tvActiveAlerts, total, 800) // Using total for now or whatever fits
-        binding.tvAccuracy.text = "98.5%"
+        currentActiveCount = activeCount
+
+        animateCounter(binding.tvDetectionsToday, today, 800)
+        animateCounter(binding.tvActiveAlerts, activeCount, 400)
+        animateCounter(binding.tvAccuracy, total, 800)
     }
 
     private fun loadRecentDetections() {
@@ -107,6 +131,70 @@ class DashboardFragment : Fragment() {
                 textView.text = animator.animatedValue.toString()
             }
             start()
+        }
+    }
+
+    private fun fetchLatestAlertAndUpdateActiveBanner() {
+        scope.launch {
+            val alert: AlertResponse? = try {
+                withContext(Dispatchers.IO) {
+                    val response = RetrofitClient.api.getLatestAlert().execute()
+                    if (response.isSuccessful) response.body() else null
+                }
+            } catch (_: Exception) {
+                null
+            }
+
+            if (alert?.animal_detected == true) {
+                currentActiveCount = 1
+                val dangerLevel = DetectionHistory.calculateDangerLevel(alert.animal_type, alert.confidence)
+
+                binding.cardActiveAlert.visibility = View.VISIBLE
+                binding.tvActiveAlertLabel.text = "⚠ Active Alert"
+                binding.tvActiveAlertAnimal.text = "${iconForAnimal(alert.animal_type)} ${alert.animal_type ?: "Unknown"}"
+                binding.tvActiveAlertConfidence.text =
+                    "Confidence: ${alert.confidence}% · Danger Level $dangerLevel"
+
+                val location = alert.location ?: "Unknown"
+                val relative = relativeTimeAgo(alert.timestamp)
+                binding.tvActiveAlertLocation.text = "📍 $location · $relative"
+
+                updateStats(activeCount = 1)
+            } else {
+                binding.cardActiveAlert.visibility = View.GONE
+                updateStats(activeCount = 0)
+            }
+        }
+    }
+
+    private fun relativeTimeAgo(timestamp: Long): String {
+        val normalizedTimestamp = if (timestamp < 1000000000000L) timestamp * 1000 else timestamp
+        val diffMs = System.currentTimeMillis() - normalizedTimestamp
+        if (diffMs < 0) return "now"
+
+        val minutes = diffMs / 60000L
+        if (minutes < 1) return "just now"
+        if (minutes < 60) return "${minutes} min ago"
+
+        val hours = minutes / 60
+        if (hours < 24) return "${hours} hr ago"
+
+        val days = hours / 24
+        return "${days} d ago"
+    }
+
+    private fun iconForAnimal(animalType: String?): String {
+        val type = animalType?.lowercase(Locale.getDefault()) ?: ""
+        return when {
+            type.contains("bear") -> "🐻"
+            type.contains("wolf") -> "🐺"
+            type.contains("lion") -> "🦁"
+            type.contains("tiger") -> "🐯"
+            type.contains("snake") || type.contains("cobra") -> "🐍"
+            type.contains("fox") -> "🦊"
+            type.contains("rabbit") -> "🐰"
+            type.contains("deer") -> "🦌"
+            else -> "🐾"
         }
     }
 
@@ -139,12 +227,14 @@ class DashboardFragment : Fragment() {
 
     fun refreshData() {
         // Called when fragment is resumed or manually refreshed
-        updateStats()
         loadRecentDetections()
+        updateStats(activeCount = currentActiveCount)
+        fetchLatestAlertAndUpdateActiveBanner()
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+        job.cancel()
     }
 }

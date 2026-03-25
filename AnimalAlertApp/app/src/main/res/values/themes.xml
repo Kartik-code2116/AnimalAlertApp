@@ -1,11 +1,11 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
 
     <!-- MAIN APP THEME (MUST extend Theme.AppCompat.*) -->
-    <style name="Theme.AnimalAlert" parent="Theme.AppCompat.Light.NoActionBar">
-        <item name="colorPrimary">@color/purple_500</item>
-        <item name="colorPrimaryDark">@color/purple_700</item>
-        <item name="colorAccent">@color/teal_200</item>
-        <item name="android:statusBarColor">@color/purple_700</item>
+    <style name="Theme.AnimalAlert" parent="Theme.AppCompat.DayNight.NoActionBar">
+        <item name="colorPrimary">#0F1520</item>
+        <item name="colorPrimaryDark">#0A0C10</item>
+        <item name="colorAccent">#00E87A</item>
+        <item name="android:statusBarColor">#0A0C10</item>
     </style>
 
 </resources>

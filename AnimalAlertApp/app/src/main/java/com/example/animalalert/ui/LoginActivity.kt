@@ -29,22 +29,21 @@ class LoginActivity : AppCompatActivity() {
             performLogin()
         }
 
+        binding.btnBiometric.setOnClickListener {
+            Toast.makeText(this, "Biometric Authentication (mock)", Toast.LENGTH_SHORT).show()
+        }
+
         binding.tvRegister.setOnClickListener {
             startActivity(Intent(this, RegisterActivity::class.java))
         }
     }
 
     private fun performLogin() {
-        val email = binding.etEmail.text.toString().trim()
+        val user = binding.etEmail.text.toString().trim()
         val password = binding.etPassword.text.toString().trim()
 
-        if (email.isEmpty() || password.isEmpty()) {
+        if (user.isEmpty() || password.isEmpty()) {
             Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show()
-            return
-        }
-
-        if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-            Toast.makeText(this, "Please enter a valid email", Toast.LENGTH_SHORT).show()
             return
         }
 
@@ -55,7 +54,8 @@ class LoginActivity : AppCompatActivity() {
 
         // Simulate login (in real app, this would be API call)
         preferenceManager.setLoggedIn(true)
-        preferenceManager.saveUserData("User", email, "")
+        // The HTML mockup uses a username-style identifier, not necessarily an email address.
+        preferenceManager.saveUserData(user, user, "")
         
         Toast.makeText(this, "Login successful!", Toast.LENGTH_SHORT).show()
         navigateToMain()

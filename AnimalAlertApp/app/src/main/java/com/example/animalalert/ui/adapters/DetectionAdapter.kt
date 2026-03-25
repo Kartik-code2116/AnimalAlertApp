@@ -1,7 +1,5 @@
 package com.example.animalalert.ui.adapters
 
-import android.location.Address
-import android.location.Geocoder
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -10,7 +8,6 @@ import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.animalalert.R
 import com.example.animalalert.model.DetectionHistory
-import java.text.SimpleDateFormat
 import java.util.*
 
 class DetectionAdapter(
@@ -51,6 +48,7 @@ class DetectionAdapter(
 
     inner class DetectionViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val cardView: CardView = itemView.findViewById(R.id.cardDetection)
+        private val tvDetIcon: TextView = itemView.findViewById(R.id.tvDetIcon)
         private val tvAnimalType: TextView = itemView.findViewById(R.id.tvAnimalType)
         private val tvConfidence: TextView = itemView.findViewById(R.id.tvConfidence)
         private val tvLocation: TextView = itemView.findViewById(R.id.tvLocation)
@@ -59,39 +57,32 @@ class DetectionAdapter(
         private val btnDelete: android.widget.ImageButton? = itemView.findViewById(R.id.btnDelete)
 
         fun bind(detection: DetectionHistory) {
-            tvAnimalType.text = detection.animalType ?: "Unknown Animal"
+            val animal = detection.animalType ?: "Unknown"
+            tvAnimalType.text = animal
+            tvDetIcon.text = iconForAnimal(animal)
+
+            // HTML-like meta line: relative time + Cam-XX (camera id not available yet).
+            val relativeTime = relativeTimeAgo(detection.timestamp)
+            tvTime.text = relativeTime
+            tvLocation.text = cameraPlaceholder(detection.id)
+
+            // Hidden in the updated layout, but keep for completeness/debug.
             tvConfidence.text = "Confidence: ${detection.confidence}%"
-            
-            // Try to get a readable address if coordinates are provided
-            val displayLocation = if (detection.latitude != null && detection.longitude != null) {
-                try {
-                    val geocoder = Geocoder(itemView.context, Locale.getDefault())
-                    val addresses = geocoder.getFromLocation(detection.latitude, detection.longitude, 1)
-                    if (addresses != null && addresses.isNotEmpty()) {
-                        val address = addresses[0]
-                        "${address.locality ?: ""}, ${address.adminArea ?: ""}".trim { it <= ' ' || it == ',' }
-                    } else {
-                        detection.location ?: "Location: N/A"
-                    }
-                } catch (e: Exception) {
-                    detection.location ?: "Location: N/A"
-                }
-            } else {
-                detection.location ?: "Location: N/A"
-            }
-            
-            tvLocation.text = displayLocation
-            
-            val dateFormat = SimpleDateFormat("dd MMM yyyy, HH:mm", Locale.getDefault())
-            val normalizedTime = if (detection.timestamp < 1000000000000L) detection.timestamp * 1000 else detection.timestamp
-            tvTime.text = dateFormat.format(Date(normalizedTime))
-            
-            tvDangerLevel.text = "Danger: ${detection.getDangerLevelText()}"
-            tvDangerLevel.setTextColor(detection.getDangerColor())
-            
-            // Set card background color based on danger level
-            val alphaColor = (detection.getDangerColor() and 0x00FFFFFF) or 0x10000000
-            cardView.setCardBackgroundColor(alphaColor)
+
+            // HTML-like badge: LV 1..5
+            tvDangerLevel.text = "LV ${detection.dangerLevel}"
+            val dangerColor = detection.getDangerColor()
+            tvDangerLevel.setTextColor(dangerColor)
+
+            val badgeBg = (dangerColor and 0x00FFFFFF) or 0x22000000 // semi-transparent
+            tvDangerLevel.setBackgroundColor(badgeBg)
+
+            // Set overall card tint.
+            val cardBg = (dangerColor and 0x00FFFFFF) or 0x11000000 // subtle tint
+            cardView.setCardBackgroundColor(cardBg)
+
+            // Tint the icon container slightly as well.
+            tvDetIcon.setBackgroundColor(cardBg)
             
             itemView.setOnClickListener {
                 onItemClick(detection)
@@ -100,6 +91,45 @@ class DetectionAdapter(
             btnDelete?.setOnClickListener {
                 onDeleteClick(detection)
             }
+        }
+    }
+
+    private fun relativeTimeAgo(timestamp: Long): String {
+        val normalizedTimestamp = if (timestamp < 1000000000000L) timestamp * 1000 else timestamp
+        val diffMs = System.currentTimeMillis() - normalizedTimestamp
+        if (diffMs < 0) return "now"
+
+        val minutes = diffMs / 60000L
+        if (minutes < 1) return "just now"
+        if (minutes < 60) return "${minutes} min ago"
+
+        val hours = minutes / 60
+        if (hours < 24) return "${hours} hr ago"
+
+        val days = hours / 24
+        return "${days} d ago"
+    }
+
+    private fun cameraPlaceholder(detectionId: String): String {
+        // Stable placeholder mapping until the backend/model includes camera_id.
+        val cam = (kotlin.math.abs(detectionId.hashCode()) % 3) + 1 // 1..3
+        return "Cam-%02d".format(cam)
+    }
+
+    private fun iconForAnimal(animal: String): String {
+        val type = animal.lowercase(Locale.getDefault())
+        return when {
+            type.contains("bear") -> "🐻"
+            type.contains("wolf") -> "🐺"
+            type.contains("lion") -> "🦁"
+            type.contains("tiger") -> "🐯"
+            type.contains("snake") -> "🐍"
+            type.contains("cobra") -> "🐍"
+            type.contains("fox") -> "🦊"
+            type.contains("rabbit") -> "🐰"
+            type.contains("deer") -> "🦌"
+            type.contains("wolf") -> "🐺"
+            else -> "🐾"
         }
     }
 }

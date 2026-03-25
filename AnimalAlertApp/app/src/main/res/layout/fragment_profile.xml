@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F5F5F5"
+    android:background="#0A0C10"
     android:fillViewport="true">
 
     <LinearLayout
@@ -18,7 +18,7 @@
             android:layout_marginBottom="20dp"
             app:cardCornerRadius="16dp"
             app:cardElevation="4dp"
-            android:background="#FFFFFF">
+            android:background="#161C25">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -39,7 +39,7 @@
                     android:layout_height="wrap_content"
                     android:text="user@example.com"
                     android:textSize="14sp"
-                    android:textColor="#666666" />
+                    android:textColor="#9AA5B8" />
 
                 <TextView
                     android:id="@+id/tvUserName"
@@ -47,7 +47,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="8dp"
                     android:text="User Name"
-                    android:textColor="#333333"
+                    android:textColor="#E8EDF5"
                     android:textSize="24sp"
                     android:textStyle="bold" />
 
@@ -60,7 +60,7 @@
             android:layout_marginBottom="20dp"
             app:cardCornerRadius="16dp"
             app:cardElevation="4dp"
-            android:background="#FFFFFF">
+            android:background="#161C25">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -74,7 +74,7 @@
                     android:text="Contact Information"
                     android:textSize="18sp"
                     android:textStyle="bold"
-                    android:textColor="#333333"
+                    android:textColor="#E8EDF5"
                     android:layout_marginBottom="16dp" />
 
                 <LinearLayout
@@ -89,7 +89,7 @@
                         android:layout_weight="1"
                         android:text="Phone:"
                         android:textSize="14sp"
-                        android:textColor="#666666" />
+                        android:textColor="#9AA5B8" />
 
                     <TextView
                         android:id="@+id/tvUserPhone"
@@ -99,7 +99,7 @@
                         android:text="+1234567890"
                         android:textSize="14sp"
                         android:textStyle="bold"
-                        android:textColor="#333333"
+                        android:textColor="#E8EDF5"
                         android:gravity="end" />
                 </LinearLayout>
 
@@ -114,7 +114,7 @@
                         android:layout_weight="1"
                         android:text="Last Login:"
                         android:textSize="14sp"
-                        android:textColor="#666666" />
+                        android:textColor="#9AA5B8" />
 
                     <TextView
                         android:id="@+id/tvLastLogin"
@@ -124,7 +124,7 @@
                         android:text="Today"
                         android:textSize="14sp"
                         android:textStyle="bold"
-                        android:textColor="#333333"
+                        android:textColor="#E8EDF5"
                         android:gravity="end" />
                 </LinearLayout>
 
@@ -137,7 +137,7 @@
             android:layout_marginBottom="20dp"
             app:cardCornerRadius="16dp"
             app:cardElevation="4dp"
-            android:background="#FFFFFF">
+            android:background="#161C25">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -151,7 +151,7 @@
                     android:text="Detection Statistics"
                     android:textSize="18sp"
                     android:textStyle="bold"
-                    android:textColor="#333333"
+                    android:textColor="#E8EDF5"
                     android:layout_marginBottom="20dp" />
 
                 <LinearLayout
@@ -175,7 +175,7 @@
                             android:layout_height="wrap_content"
                             android:text="Today"
                             android:textSize="12sp"
-                            android:textColor="#666666"
+                            android:textColor="#9AA5B8"
                             android:layout_marginBottom="4dp" />
 
                         <TextView
@@ -203,7 +203,7 @@
                             android:layout_height="wrap_content"
                             android:text="Total"
                             android:textSize="12sp"
-                            android:textColor="#666666"
+                            android:textColor="#9AA5B8"
                             android:layout_marginBottom="4dp" />
 
                         <TextView
@@ -234,7 +234,7 @@
             android:layout_marginBottom="20dp"
             app:cardCornerRadius="16dp"
             app:cardElevation="4dp"
-            android:background="#FFFFFF">
+            android:background="#161C25">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -248,7 +248,7 @@
                     android:text="Notification Settings"
                     android:textSize="18sp"
                     android:textStyle="bold"
-                    android:textColor="#333333"
+                    android:textColor="#E8EDF5"
                     android:layout_marginBottom="16dp" />
 
                 <LinearLayout
@@ -264,7 +264,7 @@
                         android:layout_weight="1"
                         android:text="Enable Notifications"
                         android:textSize="16sp"
-                        android:textColor="#333333" />
+                        android:textColor="#E8EDF5" />
 
                     <androidx.appcompat.widget.SwitchCompat
                         android:id="@+id/switchNotifications"
@@ -291,7 +291,7 @@
                         android:layout_weight="1"
                         android:text="In-App Notifications"
                         android:textSize="14sp"
-                        android:textColor="#666666" />
+                        android:textColor="#9AA5B8" />
 
                     <androidx.appcompat.widget.SwitchCompat
                         android:id="@+id/switchInAppNotifications"
@@ -312,7 +312,7 @@
                         android:layout_weight="1"
                         android:text="Email Notifications"
                         android:textSize="14sp"
-                        android:textColor="#666666" />
+                        android:textColor="#9AA5B8" />
 
                     <androidx.appcompat.widget.SwitchCompat
                         android:id="@+id/switchEmailNotifications"
@@ -332,7 +332,7 @@
                         android:layout_weight="1"
                         android:text="SMS Notifications"
                         android:textSize="14sp"
-                        android:textColor="#666666" />
+                        android:textColor="#9AA5B8" />
 
                     <androidx.appcompat.widget.SwitchCompat
                         android:id="@+id/switchSmsNotifications"
