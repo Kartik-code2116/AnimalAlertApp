@@ -6,13 +6,13 @@ Animal Alert App is an Android application that connects to an **external camera
 
 ## ✨ Features
 
-| Feature | Description |
-|---|---|
-| **Server-Based Detection** | Connects to a Python Flask backend running YOLOv8 for animal detection via an external webcam. No on-device ML required. |
-| **Background Alert Service** | A foreground service (`AlertService`) continuously polls the server for new alerts every 3 seconds. |
-| **Audible Siren** | Plays a looping alarm at maximum volume when a dangerous animal is detected. User can manually stop it. |
-| **Smart Danger Classification** | Automatically classifies threat levels (1–5) based on species (e.g., Bears → Very High, Rabbits → Low). |
-| **Interactive Google Map** | Plots detection locations with color-coded pins (🔴 Dangerous, 🔵 Safe) using Google Maps SDK. |
+|       Feature              |            Description                   |
+|----------------------------|------------------------------------------|
+| **Server-Based Detection** | Connects to a Python Flask backend running YOLOv8 for animal detection via an external webcam. No on-device ML required.    |
+|**Background Alert Service**| A foreground service (`AlertService`) continuously polls the server for new alerts every 3 seconds.            |
+| **Audible Siren**          | Plays a looping alarm at maximum volume when a dangerous animal is detected. User can manually stop it. |
+|**Smart Danger Classification**| Automatically classifies threat levels (1–5) based on species (e.g., Bears → Very High, Rabbits → Low). |
+| **Interactive Google Map**   | Plots detection locations with color-coded pins (🔴 Dangerous, 🔵 Safe) using Google Maps SDK. |
 | **Multi-channel Notifications** | Supports In-App push notifications, SMS alerts, and Email alerts (configurable per user). |
 | **Detection Dashboard** | Displays daily and total detection statistics, recent alert history with timestamps and threat levels. |
 | **User Authentication** | Login and Registration screens backed by a REST API. |
