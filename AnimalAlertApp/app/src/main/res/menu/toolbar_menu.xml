@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/action_refresh"
+        android:title="Refresh"
+        android:icon="@drawable/ic_refresh"
+        app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/action_scan_now"
+        android:title="Scan Now"
+        android:icon="@drawable/ic_scan"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_notifications"
+        android:title="Notifications"
+        android:icon="@drawable/ic_notifications"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_emergency_contacts"
+        android:title="Emergency Contacts"
+        android:icon="@drawable/ic_emergency"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_history"
+        android:title="Detection History"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_share_location"
+        android:title="Share My Location"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_settings"
+        android:title="Settings"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_help"
+        android:title="Help &amp; Support"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_logout"
+        android:title="Logout"
+        app:showAsAction="never" />
+
+</menu>

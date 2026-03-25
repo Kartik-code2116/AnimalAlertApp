@@ -101,13 +101,14 @@ class AlertSystemFragment : Fragment() {
     }
     
     private fun loadRecentDetections() {
+        val b = _binding ?: return
         val detections = preferenceManager.getDetectionHistory()
         if (detections.isEmpty()) {
-            binding.recyclerViewDetections.visibility = View.GONE
-            binding.tvNoDetections.visibility = View.VISIBLE
+            b.recyclerViewDetections.visibility = View.GONE
+            b.tvNoDetections.visibility = View.VISIBLE
         } else {
-            binding.recyclerViewDetections.visibility = View.VISIBLE
-            binding.tvNoDetections.visibility = View.GONE
+            b.recyclerViewDetections.visibility = View.VISIBLE
+            b.tvNoDetections.visibility = View.GONE
             if (!::detectionAdapter.isInitialized) {
                 setupRecyclerView()
             }
@@ -143,7 +144,8 @@ class AlertSystemFragment : Fragment() {
                         }
                     }
                 } catch (e: Exception) {
-                    binding.tvStatus.text = "Error: ${e.message}"
+                    val b = _binding ?: break
+                    b.tvStatus.text = "Error: ${e.message}"
                 }
                 delay(3000)
             }
@@ -151,11 +153,12 @@ class AlertSystemFragment : Fragment() {
     }
 
     private fun updateUI(alert: AlertResponse) {
+        val b = _binding ?: return
         if (alert.animal_detected) {
             val dangerLevel = DetectionHistory.calculateDangerLevel(alert.animal_type, alert.confidence)
-            binding.tvStatus.text = "⚠ LIVE THREAT"
-            binding.tvAnimalType.text = "${iconForAnimal(alert.animal_type)} ${alert.animal_type ?: "Unknown"}"
-            binding.tvConfidence.text = "Confidence: ${alert.confidence}% · LV $dangerLevel"
+            b.tvStatus.text = "⚠ LIVE THREAT"
+            b.tvAnimalType.text = "${iconForAnimal(alert.animal_type)} ${alert.animal_type ?: "Unknown"}"
+            b.tvConfidence.text = "Confidence: ${alert.confidence}% · LV $dangerLevel"
             
             // Geocode location if possible
             var displayLocation = alert.location ?: "N/A"
@@ -176,14 +179,14 @@ class AlertSystemFragment : Fragment() {
             }
             
             val relative = relativeTimeAgo(alert.timestamp)
-            binding.tvLocation.text = "📍 $displayLocation · $relative"
-            binding.cardAlert.visibility = View.VISIBLE
-            binding.ivStatus.setImageResource(R.drawable.ic_alert_active)
+            b.tvLocation.text = "📍 $displayLocation · $relative"
+            b.cardAlert.visibility = View.VISIBLE
+            b.ivStatus.setImageResource(R.drawable.ic_alert_active)
             // History is written by AlertService. Here we only refresh UI list.
             loadRecentDetections()
             
             // Allow user to click the active alert to see it on map
-            binding.cardAlert.setOnClickListener {
+            b.cardAlert.setOnClickListener {
                 if (alert.location != null) {
                     val parts = alert.location.split(",")
                     if (parts.size == 2) {
@@ -211,10 +214,10 @@ class AlertSystemFragment : Fragment() {
                 }
             }
         } else {
-            binding.tvStatus.text = "✅ SYSTEM ACTIVE"
-            binding.cardAlert.visibility = View.GONE
-            binding.ivStatus.setImageResource(R.drawable.ic_alert_inactive)
-            binding.cardAlert.setOnClickListener(null)
+            b.tvStatus.text = "✅ SYSTEM ACTIVE"
+            b.cardAlert.visibility = View.GONE
+            b.ivStatus.setImageResource(R.drawable.ic_alert_inactive)
+            b.cardAlert.setOnClickListener(null)
         }
     }
 

@@ -95,30 +95,33 @@ class DashboardFragment : Fragment() {
     }
 
     private fun updateHeaderFromPrefs() {
+        val b = _binding ?: return
         // Header elements are part of the HTML phone mockup.
         val name = preferenceManager.getUserName().ifEmpty { "User" }
-        binding.tvUserName.text = "$name 👋"
-        binding.tvLiveBadge.text = "SYSTEM ACTIVE · 3 CAMERAS"
+        b.tvUserName.text = "$name 👋"
+        b.tvLiveBadge.text = "SYSTEM ACTIVE · 3 CAMERAS"
     }
 
     private fun updateStats(activeCount: Int) {
+        val b = _binding ?: return
         val today = preferenceManager.getTodayDetections()
         val total = preferenceManager.getTotalDetections()
         currentActiveCount = activeCount
 
-        animateCounter(binding.tvDetectionsToday, today, 800)
-        animateCounter(binding.tvActiveAlerts, activeCount, 400)
-        animateCounter(binding.tvAccuracy, total, 800)
+        animateCounter(b.tvDetectionsToday, today, 800)
+        animateCounter(b.tvActiveAlerts, activeCount, 400)
+        animateCounter(b.tvAccuracy, total, 800)
     }
 
     private fun loadRecentDetections() {
+        val b = _binding ?: return
         val detections = preferenceManager.getDetectionHistory().take(3)
         if (detections.isEmpty()) {
-            binding.recyclerViewDashboardDetections.visibility = View.GONE
-            binding.tvEmptyRecent.visibility = View.VISIBLE
+            b.recyclerViewDashboardDetections.visibility = View.GONE
+            b.tvEmptyRecent.visibility = View.VISIBLE
         } else {
-            binding.recyclerViewDashboardDetections.visibility = View.VISIBLE
-            binding.tvEmptyRecent.visibility = View.GONE
+            b.recyclerViewDashboardDetections.visibility = View.VISIBLE
+            b.tvEmptyRecent.visibility = View.GONE
             detectionAdapter.updateData(detections)
         }
     }
@@ -145,23 +148,24 @@ class DashboardFragment : Fragment() {
                 null
             }
 
+            val b = _binding ?: return@launch
             if (alert?.animal_detected == true) {
                 currentActiveCount = 1
                 val dangerLevel = DetectionHistory.calculateDangerLevel(alert.animal_type, alert.confidence)
 
-                binding.cardActiveAlert.visibility = View.VISIBLE
-                binding.tvActiveAlertLabel.text = "⚠ Active Alert"
-                binding.tvActiveAlertAnimal.text = "${iconForAnimal(alert.animal_type)} ${alert.animal_type ?: "Unknown"}"
-                binding.tvActiveAlertConfidence.text =
+                b.cardActiveAlert.visibility = View.VISIBLE
+                b.tvActiveAlertLabel.text = "⚠ Active Alert"
+                b.tvActiveAlertAnimal.text = "${iconForAnimal(alert.animal_type)} ${alert.animal_type ?: "Unknown"}"
+                b.tvActiveAlertConfidence.text =
                     "Confidence: ${alert.confidence}% · Danger Level $dangerLevel"
 
                 val location = alert.location ?: "Unknown"
                 val relative = relativeTimeAgo(alert.timestamp)
-                binding.tvActiveAlertLocation.text = "📍 $location · $relative"
+                b.tvActiveAlertLocation.text = "📍 $location · $relative"
 
                 updateStats(activeCount = 1)
             } else {
-                binding.cardActiveAlert.visibility = View.GONE
+                b.cardActiveAlert.visibility = View.GONE
                 updateStats(activeCount = 0)
             }
         }
