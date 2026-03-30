@@ -167,7 +167,8 @@ class PreferenceManager(context: Context) {
 
     // ── Sound ───────────────────────────────────────────────
     fun setInAppSound(enabled: Boolean) { prefs.edit().putBoolean(KEY_IN_APP_SOUND, enabled).apply() }
-    fun isInAppSoundEnabled(): Boolean = prefs.getBoolean(KEY_IN_APP_SOUND, true)
+    fun isInAppSound(): Boolean = prefs.getBoolean(KEY_IN_APP_SOUND, true)
+    fun isInAppSoundEnabled(): Boolean = isInAppSound()
 
     // ── Alert System ─────────────────────────────────────────
     fun setAutoStartService(enabled: Boolean) { prefs.edit().putBoolean(KEY_AUTO_START_SERVICE, enabled).apply() }
@@ -192,7 +193,7 @@ class PreferenceManager(context: Context) {
     // ── Server ───────────────────────────────────────────────
     fun setServerUrl(url: String) { prefs.edit().putString(KEY_SERVER_URL, url).apply() }
     fun getServerUrl(): String = prefs.getString(KEY_SERVER_URL, "http://192.168.1.100:5000") ?: "http://192.168.1.100:5000"
-    
+
     // Detection History — synchronized to prevent races between
     // AlertService (IO thread) and UI fragments (main thread).
     fun addDetectionHistory(detection: DetectionHistory) {
@@ -257,4 +258,3 @@ class PreferenceManager(context: Context) {
         }
     }
 }
-

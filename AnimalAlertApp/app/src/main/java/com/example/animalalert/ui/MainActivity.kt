@@ -22,7 +22,6 @@ import com.example.animalalert.ui.fragments.AlertSystemFragment
 import com.example.animalalert.ui.fragments.DashboardFragment
 import com.example.animalalert.ui.fragments.MapFragment
 import com.example.animalalert.ui.fragments.ProfileFragment
-import com.example.animalalert.ui.fragments.SettingsFragment
 import com.example.animalalert.utils.PreferenceManager
 
 class MainActivity : AppCompatActivity() {
@@ -209,7 +208,7 @@ class MainActivity : AppCompatActivity() {
                 true
             }
             R.id.action_settings -> {
-                openSettings()
+                startActivity(Intent(this, SettingsActivity::class.java))
                 true
             }
             R.id.action_help -> {
@@ -274,21 +273,16 @@ class MainActivity : AppCompatActivity() {
         Toast.makeText(this, "Share location feature coming soon", Toast.LENGTH_SHORT).show()
     }
 
-    private fun openSettings() {
-        loadFragment(SettingsFragment())
-        // Deselect all bottom-nav items (Menu is not Kotlin Iterable)
-        val menu = binding.bottomNavigation.menu
-        menu.setGroupCheckable(0, true, false)
-        for (i in 0 until menu.size()) menu.getItem(i).isChecked = false
-        menu.setGroupCheckable(0, true, true)
-    }
-
     /** Apply dark / light / system theme from saved preference. */
+    @Suppress("OverloadResolutionAmbiguity")
     fun applyThemeSetting() {
+        val pm: com.example.animalalert.utils.PreferenceManager = preferenceManager
+        val followSystem = pm.isFollowSystemTheme()
+        val darkMode = pm.isDarkMode()
         val mode = when {
-            preferenceManager.isFollowSystemTheme() -> AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
-            preferenceManager.isDarkMode()          -> AppCompatDelegate.MODE_NIGHT_YES
-            else                                    -> AppCompatDelegate.MODE_NIGHT_NO
+            followSystem -> AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
+            darkMode     -> AppCompatDelegate.MODE_NIGHT_YES
+            else         -> AppCompatDelegate.MODE_NIGHT_NO
         }
         AppCompatDelegate.setDefaultNightMode(mode)
     }
