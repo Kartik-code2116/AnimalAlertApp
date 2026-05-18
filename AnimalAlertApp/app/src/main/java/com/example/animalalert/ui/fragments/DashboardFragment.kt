@@ -224,8 +224,20 @@ class DashboardFragment : Fragment() {
     private fun handleQuickActionClick(view: View) {
         when (view.id) {
             R.id.card_start_monitoring -> {
-                Toast.makeText(requireContext(), "Starting monitoring...", Toast.LENGTH_SHORT).show()
-                // Add your monitoring start logic here
+                try {
+                    val activity = requireActivity() as com.example.animalalert.ui.MainActivity
+                    val mapFragment = com.example.animalalert.ui.fragments.MapFragment().apply {
+                        arguments = Bundle().apply {
+                            putBoolean("trigger_monitoring_animation", true)
+                        }
+                    }
+                    activity.supportFragmentManager.beginTransaction()
+                        .replace(R.id.fragment_container, mapFragment)
+                        .commit()
+                    activity.binding.bottomNavigation.selectedItemId = R.id.nav_map
+                } catch (e: Exception) {
+                    Toast.makeText(requireContext(), "Failed to launch scanner", Toast.LENGTH_SHORT).show()
+                }
             }
             R.id.card_view_map -> {
                 navigateToTab(R.id.nav_map)

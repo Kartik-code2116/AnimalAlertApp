@@ -44,6 +44,11 @@ class AlertSystemFragment : Fragment() {
         preferenceManager = PreferenceManager(requireContext())
         
         setupViews()
+        
+        val running = isServiceRunning(AlertService::class.java)
+        binding.switchServiceStatus.isChecked = running
+        binding.tvStatus.text = if (running) "Service Running" else "Service Stopped"
+        
         startMonitoring()
     }
 
@@ -58,6 +63,16 @@ class AlertSystemFragment : Fragment() {
         
         binding.btnOpenCamera.setOnClickListener {
             openCameraDetection()
+        }
+
+        binding.switchServiceStatus.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked) {
+                startAlertService()
+                binding.tvStatus.text = "Service Running"
+            } else {
+                stopAlertService()
+                binding.tvStatus.text = "Service Stopped"
+            }
         }
         
         setupRecyclerView()
@@ -250,6 +265,23 @@ class AlertSystemFragment : Fragment() {
             type.contains("deer") -> "🦌"
             else -> "🐾"
         }
+    }
+
+    private fun stopAlertService() {
+        val intent = Intent(requireContext(), AlertService::class.java)
+        requireContext().stopService(intent)
+        Toast.makeText(context, "Alert service stopped", Toast.LENGTH_SHORT).show()
+    }
+
+    private fun isServiceRunning(serviceClass: Class<*>): Boolean {
+        val manager = requireContext().getSystemService(android.content.Context.ACTIVITY_SERVICE) as android.app.ActivityManager
+        @Suppress("DEPRECATION")
+        for (service in manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (serviceClass.name == service.service.className) {
+                return true
+            }
+        }
+        return false
     }
 
     override fun onDestroyView() {

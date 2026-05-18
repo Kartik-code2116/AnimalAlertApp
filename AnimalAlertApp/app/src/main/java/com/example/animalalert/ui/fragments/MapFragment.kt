@@ -43,6 +43,16 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     private val job = SupervisorJob()
     private val scope = CoroutineScope(Dispatchers.Main + job)
 
+    private val cameras = listOf(
+        LatLng(37.4220, -122.0841), // Camera 1: North Perimeter
+        LatLng(37.4250, -122.0880), // Camera 2: East Ridge
+        LatLng(37.4190, -122.0800)  // Camera 3: South Gate
+    )
+    private val cameraMarkers = mutableListOf<Marker>()
+    private val cameraCircles = mutableListOf<com.google.android.gms.maps.model.Circle>()
+    private val detectionCircles = mutableListOf<com.google.android.gms.maps.model.Circle>()
+    private var scanJob: Job? = null
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -101,8 +111,11 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         focusDangerLevel: Int = 1
     ) {
         val ctx = context ?: return
-        googleMap?.clear()
+        // Remove only detection layer markers/circles, keeping camera layers intact!
+        markers.forEach { it.remove() }
         markers.clear()
+        detectionCircles.forEach { it.remove() }
+        detectionCircles.clear()
         
         val historyList = com.example.animalalert.utils.PreferenceManager(ctx).getDetectionHistory()
         
@@ -126,7 +139,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             )
             marker?.let { markers.add(it) }
             
-            googleMap?.addCircle(
+            val circle = googleMap?.addCircle(
                 com.google.android.gms.maps.model.CircleOptions()
                     .center(latLng)
                     .radius(150.0)
@@ -134,6 +147,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                     .strokeColor(circleStroke)
                     .fillColor(circleFill)
             )
+            circle?.let { detectionCircles.add(it) }
         }
         
         if (focusLat != null && focusLng != null && focusLat != 0.0 && focusLng != 0.0) {
@@ -172,6 +186,9 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         map.uiSettings.isMyLocationButtonEnabled = false
         map.uiSettings.isCompassEnabled = true
         
+        // Plot and initialize all standard surveillance cameras!
+        plotCameras()
+
         // Check if we need to show a specific detection first
         arguments?.let { args ->
             val lat = args.getDouble("detection_lat", 0.0)
@@ -180,12 +197,20 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             val animalType = args.getString("detection_animal_type")
             val confidence = args.getFloat("detection_confidence", 0f)
             val dangerLevel = args.getInt("detection_danger", 1)
+            val triggerAnim = args.getBoolean("trigger_monitoring_animation", false)
             
             if (lat != 0.0 && lng != 0.0) {
                 showAllDetectionsOnMap(lat, lng, animalType, dangerLevel)
             } else {
                 fetchLatestAlert()
                 startPeriodicUpdates()
+            }
+
+            if (triggerAnim) {
+                // Focus on Camera 1 (North Perimeter) and show scanning alert!
+                val focusCam = LatLng(37.4220, -122.0841)
+                googleMap?.animateCamera(CameraUpdateFactory.newLatLngZoom(focusCam, 16f))
+                Toast.makeText(ctx, "Surveillance sensors activated and scanning...", Toast.LENGTH_LONG).show()
             }
         } ?: run {
             fetchLatestAlert()
@@ -274,9 +299,11 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                     val lng = locationParts[1].trim().toDouble()
                     val latLng = LatLng(lat, lng)
                     
-                    // Clear old markers completely and replot everything
-                    googleMap?.clear()
+                    // Clear old detection markers/circles and replot everything
+                    markers.forEach { it.remove() }
                     markers.clear()
+                    detectionCircles.forEach { it.remove() }
+                    detectionCircles.clear()
                     
                     // Plot historical detections
                     showAllDetectionsOnMap()
@@ -299,7 +326,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                     marker?.let { markers.add(it) }
                     
                     // Add LIVE red/blue circle
-                    googleMap?.addCircle(
+                    val liveCircle = googleMap?.addCircle(
                         com.google.android.gms.maps.model.CircleOptions()
                             .center(latLng)
                             .radius(150.0)
@@ -307,6 +334,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                             .strokeColor(liveCircleStroke)
                             .fillColor(liveCircleFill)
                     )
+                    liveCircle?.let { detectionCircles.add(it) }
                     
                     // Move camera to marker
                     googleMap?.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15f))
@@ -352,8 +380,75 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         return BitmapDescriptorFactory.fromBitmap(bitmap)
     }
 
+    private fun plotCameras() {
+        val map = googleMap ?: return
+        val cameraIcon = vectorToBitmap(R.drawable.ic_camera)
+        
+        cameraMarkers.forEach { it.remove() }
+        cameraMarkers.clear()
+        
+        for (i in cameras.indices) {
+            val marker = map.addMarker(
+                MarkerOptions()
+                    .position(cameras[i])
+                    .title("Surveillance Camera ${i + 1}")
+                    .snippet("Status: Scanning active · 100% Signal Strength")
+                    .icon(cameraIcon)
+            )
+            marker?.let { cameraMarkers.add(it) }
+        }
+        
+        // Start the pulsing scanning animation!
+        startRadarScanAnimation()
+    }
+
+    private fun startRadarScanAnimation() {
+        scanJob?.cancel()
+        cameraCircles.forEach { it.remove() }
+        cameraCircles.clear()
+
+        // Create the circles
+        for (loc in cameras) {
+            val circle = googleMap?.addCircle(
+                com.google.android.gms.maps.model.CircleOptions()
+                    .center(loc)
+                    .radius(50.0)
+                    .strokeWidth(2.5f)
+                    .strokeColor(android.graphics.Color.parseColor("#00E676"))
+                    .fillColor(android.graphics.Color.parseColor("#1500E676"))
+            )
+            circle?.let { cameraCircles.add(it) }
+        }
+
+        // Coroutine to pulse the circles
+        scanJob = scope.launch {
+            var offset = 0.0
+            while (isActive) {
+                offset = (offset + 6.0) % 150.0
+                val radius = 50.0 + offset
+                val alphaPercent = (1.0 - (offset / 150.0)).coerceIn(0.0, 1.0)
+                
+                val fillAlphaHex = String.format("%02X", (alphaPercent * 25).toInt())
+                val strokeAlphaHex = String.format("%02X", (alphaPercent * 200).toInt())
+                
+                val fillColor = android.graphics.Color.parseColor("#${fillAlphaHex}00E676")
+                val strokeColor = android.graphics.Color.parseColor("#${strokeAlphaHex}00E676")
+                
+                withContext(Dispatchers.Main) {
+                    for (circle in cameraCircles) {
+                        circle.radius = radius
+                        circle.fillColor = fillColor
+                        circle.strokeColor = strokeColor
+                    }
+                }
+                delay(60) // High frame rate for butter-smooth scanning pulses!
+            }
+        }
+    }
+
     override fun onDestroyView() {
         super.onDestroyView()
+        scanJob?.cancel()
         job.cancel()
         _binding = null
     }

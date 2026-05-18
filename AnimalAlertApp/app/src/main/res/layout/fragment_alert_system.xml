@@ -59,12 +59,12 @@
                         android:layout_marginTop="1dp" />
                 </LinearLayout>
 
-                <!-- Toggle placeholder (visual only – controlled by service) -->
-                <View
-                    android:layout_width="38dp"
-                    android:layout_height="20dp"
-                    android:background="@color/accent"
-                    android:layout_marginStart="8dp" />
+                <com.google.android.material.switchmaterial.SwitchMaterial
+                    android:id="@+id/switchServiceStatus"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:checked="true" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
@@ -213,16 +213,21 @@
         </androidx.cardview.widget.CardView>
 
         <!-- ── SIREN BUTTON ──────────────────────────────── -->
-        <Button
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/btnStopSiren"
             android:layout_width="match_parent"
-            android:layout_height="58dp"
-            android:text="🔊  STOP SIREN"
-            android:textSize="16sp"
+            android:layout_height="56dp"
+            android:text="STOP SIREN"
+            android:textSize="15sp"
             android:textStyle="bold"
             android:textColor="@color/white"
-            android:background="@drawable/button_stop_background"
-            android:letterSpacing="0.06"
+            android:backgroundTint="@color/danger"
+            app:icon="@drawable/ic_volume_off"
+            app:iconGravity="textStart"
+            app:iconPadding="8dp"
+            app:iconTint="@color/white"
+            app:cornerRadius="28dp"
+            style="@style/Widget.MaterialComponents.Button"
             android:layout_marginBottom="20dp" />
 
         <!-- ── TODAY'S LOG ───────────────────────────────── -->

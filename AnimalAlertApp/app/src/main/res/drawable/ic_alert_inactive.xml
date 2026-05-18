@@ -1,12 +1,37 @@
-<?xml version="1.0" encoding="utf-8"?>
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="120dp"
     android:height="120dp"
     android:viewportWidth="24"
     android:viewportHeight="24">
+    <!-- Outer Scope Circle -->
     <path
-        android:fillColor="#4CAF50"
-        android:pathData="M12,2C6.48,2 2,6.48 2,12s4.48,10 10,10 10,-4.48 10,-10S17.52,2 12,2zM10,17L8,15l1.41,-1.41L10,14.17l4.59,-4.59L16,11l-6,6z"/>
+        android:fillColor="#00000000"
+        android:strokeColor="#00E676"
+        android:strokeWidth="1.8"
+        android:strokeLineCap="round"
+        android:pathData="M12,2A10,10 0,1 0,22 12,10 10,0 0,0 12,2Z"/>
+    <!-- Inner Scope Circle -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#3300E676"
+        android:strokeWidth="1.2"
+        android:pathData="M12,6A6,6 0,1 0,18 12,6 6,0 0,0 12,6Z"/>
+    <!-- Radar Crosshairs / Grid lines -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#3300E676"
+        android:strokeWidth="1.2"
+        android:strokeLineCap="round"
+        android:pathData="M12,2L12,5 M12,19L12,22 M2,12L5,12 M19,12L22,12"/>
+    <!-- Radar Scanning Sweep Line -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#00E676"
+        android:strokeWidth="1.8"
+        android:strokeLineCap="round"
+        android:pathData="M12,12L19,8"/>
+    <!-- Beautiful Bold Central Wildlife Paw Print (extremely clean and thick paths!) -->
+    <path
+        android:fillColor="#00E676"
+        android:pathData="M12,16.5c-0.9,0 -1.8,-0.6 -1.8,-1.5c0,-0.6 0.4,-1.2 0.9,-1.4c0.5,-0.2 1.3,-0.2 1.8,0c0.5,0.2 0.9,0.8 0.9,1.4c0,0.9 -0.9,1.5 -1.8,1.5z M8.8,12.5c-0.5,0 -1,-0.4 -1,-0.9c0,-0.5 0.4,-1 1,-1s1,0.5 1,0.9c0,0.5 -0.5,0.9 -1,0.9z M15.2,12.5c-0.5,0 -1,-0.4 -1,-0.9c0,-0.5 0.4,-1 1,-1s1,0.5 1,0.9c0,0.5 -0.5,0.9 -1,0.9z M10.5,9.8c-0.4,0 -0.8,-0.4 -0.8,-0.8c0,-0.4 0.4,-0.8 0.8,-0.8s0.8,0.4 0.8,0.8c0,0.4 -0.4,0.8 -0.8,0.8z M13.5,9.8c-0.4,0 -0.8,-0.4 -0.8,-0.8c0,-0.4 0.4,-0.8 0.8,-0.8s0.8,0.4 0.8,0.8c0,0.4 -0.4,0.8 -0.8,0.8z"/>
 </vector>
-
-
