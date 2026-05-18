@@ -281,7 +281,10 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                 }
             } catch (e: Exception) {
                 if (e !is CancellationException) {
-                    context?.let { Toast.makeText(it, "Error fetching alert: ${e.message}", Toast.LENGTH_SHORT).show() }
+                    android.util.Log.e("MapFragment", "Failed to fetch alert: ${e.message}")
+                    if (_binding != null) {
+                        binding.tvStatus.text = "Offline Mode · Monitoring Active"
+                    }
                 }
             }
         }

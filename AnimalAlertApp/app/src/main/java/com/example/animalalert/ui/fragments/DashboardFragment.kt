@@ -226,14 +226,7 @@ class DashboardFragment : Fragment() {
             R.id.card_start_monitoring -> {
                 try {
                     val activity = requireActivity() as com.example.animalalert.ui.MainActivity
-                    val mapFragment = com.example.animalalert.ui.fragments.MapFragment().apply {
-                        arguments = Bundle().apply {
-                            putBoolean("trigger_monitoring_animation", true)
-                        }
-                    }
-                    activity.supportFragmentManager.beginTransaction()
-                        .replace(R.id.fragment_container, mapFragment)
-                        .commit()
+                    activity.triggerMapAnimation = true
                     activity.binding.bottomNavigation.selectedItemId = R.id.nav_map
                 } catch (e: Exception) {
                     Toast.makeText(requireContext(), "Failed to launch scanner", Toast.LENGTH_SHORT).show()

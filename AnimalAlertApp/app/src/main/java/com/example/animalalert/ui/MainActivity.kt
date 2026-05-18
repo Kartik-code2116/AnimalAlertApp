@@ -28,6 +28,7 @@ class MainActivity : AppCompatActivity() {
 
     lateinit var binding: ActivityMainBinding
     private lateinit var preferenceManager: PreferenceManager
+    var triggerMapAnimation = false
 
     private val locationPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
@@ -131,7 +132,15 @@ class MainActivity : AppCompatActivity() {
                     true
                 }
                 R.id.nav_map -> {
-                    loadFragment(MapFragment())
+                    val mapFragment = MapFragment().apply {
+                        if (triggerMapAnimation) {
+                            arguments = Bundle().apply {
+                                putBoolean("trigger_monitoring_animation", true)
+                            }
+                            triggerMapAnimation = false
+                        }
+                    }
+                    loadFragment(mapFragment)
                     true
                 }
                 R.id.nav_alert -> {
