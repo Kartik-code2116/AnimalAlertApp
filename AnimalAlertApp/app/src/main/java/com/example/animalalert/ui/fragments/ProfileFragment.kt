@@ -13,10 +13,12 @@ import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import com.example.animalalert.utils.PreferenceManager
 import com.example.animalalert.R
 import com.example.animalalert.databinding.FragmentProfileBinding
 import com.example.animalalert.ui.LoginActivity
-import com.example.animalalert.utils.PreferenceManager
+import com.example.animalalert.ui.SettingsActivity
+
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -82,8 +84,11 @@ class ProfileFragment : Fragment() {
             logout()
         }
 
-        binding.btnEditProfile.setOnClickListener {
-            showEditProfileDialog()
+
+
+        binding.btnSettings.setOnClickListener {
+            val intent = Intent(requireContext(), SettingsActivity::class.java)
+            startActivity(intent)
         }
 
         binding.btnRefreshStats.setOnClickListener {
