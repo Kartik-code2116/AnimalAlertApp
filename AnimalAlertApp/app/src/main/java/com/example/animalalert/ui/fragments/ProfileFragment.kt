@@ -84,7 +84,9 @@ class ProfileFragment : Fragment() {
             logout()
         }
 
-
+        binding.btnEditProfile.setOnClickListener {
+            showEditProfileDialog()
+        }
 
         binding.btnSettings.setOnClickListener {
             val intent = Intent(requireContext(), SettingsActivity::class.java)

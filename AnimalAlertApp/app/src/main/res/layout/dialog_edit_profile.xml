@@ -5,7 +5,7 @@
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:padding="24dp"
-    android:background="#0A0C10">
+    android:background="@color/bg_deep">
 
     <TextView
         android:layout_width="wrap_content"
@@ -13,16 +13,16 @@
         android:text="Edit Profile"
         android:textSize="20sp"
         android:textStyle="bold"
-        android:textColor="#E8EDF5"
+        android:textColor="@color/text_primary"
         android:layout_marginBottom="24dp" />
 
     <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="Full Name"
-        app:hintTextColor="#9AA5B8"
-        app:boxStrokeColor="#2196F3"
-        app:boxBackgroundColor="#161C25"
+        app:hintTextColor="@color/text_muted"
+        app:boxStrokeColor="@color/accent"
+        app:boxBackgroundColor="@color/bg_input"
         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
         android:layout_marginBottom="16dp">
 
@@ -30,7 +30,7 @@
             android:id="@+id/etName"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textColor="#E8EDF5"
+            android:textColor="@color/text_primary"
             android:inputType="textPersonName" />
     </com.google.android.material.textfield.TextInputLayout>
 
@@ -38,9 +38,9 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="Email Address"
-        app:hintTextColor="#9AA5B8"
-        app:boxStrokeColor="#2196F3"
-        app:boxBackgroundColor="#161C25"
+        app:hintTextColor="@color/text_muted"
+        app:boxStrokeColor="@color/accent"
+        app:boxBackgroundColor="@color/bg_input"
         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
         android:layout_marginBottom="16dp">
 
@@ -48,7 +48,7 @@
             android:id="@+id/etEmail"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textColor="#E8EDF5"
+            android:textColor="@color/text_primary"
             android:inputType="textEmailAddress" />
     </com.google.android.material.textfield.TextInputLayout>
 
@@ -56,9 +56,9 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="Phone Number"
-        app:hintTextColor="#9AA5B8"
-        app:boxStrokeColor="#2196F3"
-        app:boxBackgroundColor="#161C25"
+        app:hintTextColor="@color/text_muted"
+        app:boxStrokeColor="@color/accent"
+        app:boxBackgroundColor="@color/bg_input"
         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
         android:layout_marginBottom="24dp">
 
@@ -66,7 +66,7 @@
             android:id="@+id/etPhone"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textColor="#E8EDF5"
+            android:textColor="@color/text_primary"
             android:inputType="phone" />
     </com.google.android.material.textfield.TextInputLayout>
 
@@ -81,8 +81,8 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="Cancel"
-            android:textColor="#9AA5B8"
-            android:backgroundTint="#2A3441"
+            android:textColor="@color/text_primary"
+            android:backgroundTint="@color/bg_card3"
             app:cornerRadius="8dp"
             style="@style/Widget.MaterialComponents.Button"
             android:layout_marginEnd="8dp" />
@@ -93,8 +93,8 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="Save"
-            android:textColor="#FFFFFF"
-            android:backgroundTint="#2196F3"
+            android:textColor="@color/white"
+            android:backgroundTint="@color/accent"
             app:cornerRadius="8dp"
             style="@style/Widget.MaterialComponents.Button"
             android:layout_marginStart="8dp" />

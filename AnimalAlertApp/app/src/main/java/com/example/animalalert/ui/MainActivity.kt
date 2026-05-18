@@ -50,6 +50,7 @@ class MainActivity : AppCompatActivity() {
 
         // Setup toolbar as support action bar
         setSupportActionBar(binding.toolbar)
+        supportActionBar?.setDisplayShowTitleEnabled(false)
 
         // Check if logged in
         if (!preferenceManager.isLoggedIn()) {
