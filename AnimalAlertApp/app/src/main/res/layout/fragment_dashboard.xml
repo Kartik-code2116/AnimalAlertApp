@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#0A0C10"
+    android:background="@color/bg_deep"
     android:fillViewport="true">
 
     <LinearLayout
@@ -13,324 +12,277 @@
         android:orientation="vertical"
         android:padding="16dp">
 
-        <!-- Header Card -->
+        <!-- ── HEADER CARD ──────────────────────────────── -->
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="20dp"
-            app:cardBackgroundColor="#0F1520"
-            app:cardCornerRadius="20dp"
-            app:cardElevation="8dp">
+            android:layout_marginBottom="16dp"
+            app:cardBackgroundColor="@color/bg_card"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="0dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="24dp">
+                android:padding="20dp">
 
                 <TextView
                     android:id="@+id/tv_title"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Good Morning,"
-                    android:textColor="#E8EDF5"
-                    android:textSize="28sp"
-                    android:textStyle="bold"
-                    android:fontFamily="sans-serif-medium" />
+                    android:textColor="@color/text_muted"
+                    android:textSize="12sp"
+                    android:letterSpacing="0.12" />
 
                 <TextView
                     android:id="@+id/tvUserName"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:text="Kartik 👋"
-                    android:textColor="#E8EDF5"
-                    android:textSize="14sp"
-                    android:alpha="0.9" />
+                    android:text="Loading…"
+                    android:textColor="@color/text_primary"
+                    android:textSize="22sp"
+                    android:textStyle="bold"
+                    android:layout_marginTop="2dp" />
 
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:layout_marginTop="16dp"
-                    android:background="@color/white"
-                    android:alpha="0.2" />
-
+                <!-- Live Badge -->
                 <LinearLayout
-                    android:layout_width="match_parent"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
-                    android:orientation="horizontal">
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginTop="12dp">
 
-                    <ImageView
-                        android:layout_width="16dp"
-                        android:layout_height="16dp"
-                        android:layout_marginEnd="8dp"
-                        android:src="@drawable/ic_map"
-                        app:tint="@color/accent" />
+                    <View
+                        android:layout_width="7dp"
+                        android:layout_height="7dp"
+                        android:background="@drawable/ic_circle_green"
+                        android:layout_marginEnd="6dp" />
 
                     <TextView
                         android:id="@+id/tvLiveBadge"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="SYSTEM ACTIVE · 3 CAMERAS"
-                        android:textColor="#00E87A"
-                        android:textSize="13sp"
-                        android:maxLines="1"
-                        android:ellipsize="end" />
-
-                    <ImageView
-                        android:layout_width="16dp"
-                        android:layout_height="16dp"
-                        android:layout_marginEnd="8dp"
-                        android:layout_marginStart="8dp"
-                        android:src="@drawable/ic_map"
-                        app:tint="@color/white" />
-
-                    <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Online"
-                        android:textColor="@color/white"
-                        android:textSize="13sp"
-                        android:maxLines="1" />
+                        android:text="SYSTEM ACTIVE · 3 CAMERAS"
+                        android:textColor="@color/accent"
+                        android:textSize="11sp"
+                        android:letterSpacing="0.08" />
                 </LinearLayout>
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
-        <!-- Active Alert Banner -->
+        <!-- ── ACTIVE ALERT BANNER ───────────────────────── -->
         <androidx.cardview.widget.CardView
             android:id="@+id/cardActiveAlert"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="20dp"
+            android:layout_marginBottom="16dp"
             android:visibility="gone"
-            app:cardCornerRadius="12dp"
-            app:cardElevation="4dp"
-            android:background="#1B0B0B">
+            app:cardBackgroundColor="#1A0808"
+            app:cardCornerRadius="14dp"
+            app:cardElevation="0dp">
 
+            <!-- Red left accent stripe -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="16dp">
+                android:orientation="horizontal">
 
-                <TextView
-                    android:id="@+id/tvActiveAlertLabel"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="⚠ Active Alert"
-                    android:textSize="11sp"
-                    android:textStyle="bold"
-                    android:textColor="#FF3B3B"
-                    android:fontFamily="sans-serif-medium"
-                    android:letterSpacing="0.5" />
+                <View
+                    android:layout_width="4dp"
+                    android:layout_height="match_parent"
+                    android:background="@color/danger" />
 
-                <TextView
-                    android:id="@+id/tvActiveAlertAnimal"
-                    android:layout_width="wrap_content"
+                <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="🐻 Brown Bear"
-                    android:textSize="18sp"
-                    android:textStyle="bold"
-                    android:textColor="#FFFFFF"
-                    android:layout_marginTop="6dp" />
+                    android:orientation="vertical"
+                    android:padding="16dp">
 
-                <TextView
-                    android:id="@+id/tvActiveAlertConfidence"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Confidence: 94.2% · Danger Level 5"
-                    android:textSize="12sp"
-                    android:textColor="#E8EDF5"
-                    android:layout_marginTop="4dp" />
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="6dp">
 
-                <TextView
-                    android:id="@+id/tvActiveAlertLocation"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="📍 North Perimeter · 2 min ago"
-                    android:textSize="12sp"
-                    android:textColor="#9AA5B8"
-                    android:layout_marginTop="6dp" />
+                        <TextView
+                            android:id="@+id/tvActiveAlertLabel"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="⚠  ACTIVE ALERT"
+                            android:textSize="10sp"
+                            android:textStyle="bold"
+                            android:textColor="@color/danger"
+                            android:letterSpacing="0.15" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="LIVE"
+                            android:textSize="9sp"
+                            android:textStyle="bold"
+                            android:textColor="@color/danger"
+                            android:background="@drawable/card_border_danger"
+                            android:paddingHorizontal="8dp"
+                            android:paddingVertical="3dp" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/tvActiveAlertAnimal"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="🐻  Brown Bear"
+                        android:textSize="20sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/text_primary" />
+
+                    <TextView
+                        android:id="@+id/tvActiveAlertConfidence"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Confidence: 94.2%  ·  Danger Level 5"
+                        android:textSize="12sp"
+                        android:textColor="@color/text_secondary"
+                        android:layout_marginTop="4dp" />
+
+                    <TextView
+                        android:id="@+id/tvActiveAlertLocation"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="📍  North Perimeter  ·  2 min ago"
+                        android:textSize="11sp"
+                        android:textColor="@color/text_muted"
+                        android:layout_marginTop="6dp" />
+                </LinearLayout>
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
-        <!-- Quick Stats Row -->
+        <!-- ── STATS ROW ─────────────────────────────────── -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="20dp"
             android:orientation="horizontal"
+            android:layout_marginBottom="20dp"
             android:weightSum="3">
 
-            <!-- Detections Today Card -->
+            <!-- Active Alerts -->
             <androidx.cardview.widget.CardView
                 android:layout_width="0dp"
-                android:layout_height="100dp"
-                android:layout_marginEnd="8dp"
+                android:layout_height="86dp"
                 android:layout_weight="1"
-                app:cardBackgroundColor="#161C25"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="4dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:gravity="center"
-                    android:orientation="vertical"
-                    android:padding="12dp">
-
-                    <TextView
-                        android:id="@+id/tv_detections_today"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="12"
-                        android:textColor="#00E87A"
-                        android:textSize="24sp"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
-                        android:text="Today"
-                        android:textColor="#9AA5B8"
-                        android:textSize="12sp" />
+                android:layout_marginEnd="6dp"
+                app:cardBackgroundColor="@color/bg_card2"
+                app:cardCornerRadius="14dp"
+                app:cardElevation="0dp">
+                <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent"
+                    android:gravity="center" android:orientation="vertical">
+                    <TextView android:id="@+id/tv_active_alerts"
+                        android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:text="0" android:textSize="26sp" android:textStyle="bold"
+                        android:textColor="@color/danger" />
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:text="Active" android:textSize="10sp" android:textColor="@color/text_muted"
+                        android:letterSpacing="0.08" android:layout_marginTop="2dp" />
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
-            <!-- Active Alerts Card -->
+            <!-- Detections Today -->
             <androidx.cardview.widget.CardView
                 android:layout_width="0dp"
-                android:layout_height="100dp"
-                android:layout_marginHorizontal="8dp"
+                android:layout_height="86dp"
                 android:layout_weight="1"
-                app:cardBackgroundColor="#161C25"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="4dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:gravity="center"
-                    android:orientation="vertical"
-                    android:padding="12dp">
-
-                    <TextView
-                        android:id="@+id/tv_active_alerts"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="3"
-                        android:textColor="#FF3B3B"
-                        android:textSize="24sp"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
-                        android:text="Active"
-                        android:textColor="#9AA5B8"
-                        android:textSize="12sp" />
+                android:layout_marginHorizontal="3dp"
+                app:cardBackgroundColor="@color/bg_card2"
+                app:cardCornerRadius="14dp"
+                app:cardElevation="0dp">
+                <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent"
+                    android:gravity="center" android:orientation="vertical">
+                    <TextView android:id="@+id/tv_detections_today"
+                        android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:text="0" android:textSize="26sp" android:textStyle="bold"
+                        android:textColor="@color/text_primary" />
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:text="Today" android:textSize="10sp" android:textColor="@color/text_muted"
+                        android:letterSpacing="0.08" android:layout_marginTop="2dp" />
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
-            <!-- Accuracy Card -->
+            <!-- Total -->
             <androidx.cardview.widget.CardView
                 android:layout_width="0dp"
-                android:layout_height="100dp"
-                android:layout_marginStart="8dp"
+                android:layout_height="86dp"
                 android:layout_weight="1"
-                app:cardBackgroundColor="#161C25"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="4dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:gravity="center"
-                    android:orientation="vertical"
-                    android:padding="12dp">
-
-                    <TextView
-                        android:id="@+id/tv_accuracy"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="0"
-                        android:textColor="#00E87A"
-                        android:textSize="24sp"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
-                        android:text="Total"
-                        android:textColor="#9AA5B8"
-                        android:textSize="12sp" />
+                android:layout_marginStart="6dp"
+                app:cardBackgroundColor="@color/bg_card2"
+                app:cardCornerRadius="14dp"
+                app:cardElevation="0dp">
+                <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent"
+                    android:gravity="center" android:orientation="vertical">
+                    <TextView android:id="@+id/tv_accuracy"
+                        android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:text="0" android:textSize="26sp" android:textStyle="bold"
+                        android:textColor="@color/accent" />
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:text="Total" android:textSize="10sp" android:textColor="@color/text_muted"
+                        android:letterSpacing="0.08" android:layout_marginTop="2dp" />
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
         </LinearLayout>
 
-        <!-- Quick Actions (hidden to match the HTML phone mockup) -->
-        <TextView
-            android:layout_width="wrap_content"
+        <!-- ── QUICK ACTIONS ────────────────────────────── -->
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="12dp"
-            android:text="Quick Actions"
-            android:textColor="@color/primary_dark"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:fontFamily="sans-serif-medium"
-            android:visibility="gone" />
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="10dp">
 
-        <!-- Quick Actions Grid -->
+            <View
+                android:layout_width="4dp"
+                android:layout_height="18dp"
+                android:background="@color/accent"
+                android:layout_marginEnd="10dp" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Quick Actions"
+                android:textColor="@color/text_primary"
+                android:textSize="15sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
         <GridLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="24dp"
             android:columnCount="2"
             android:rowCount="2"
-            android:orientation="horizontal"
-            android:visibility="gone">
+            android:layout_marginBottom="20dp">
 
             <!-- Start Monitoring -->
             <androidx.cardview.widget.CardView
                 android:id="@+id/card_start_monitoring"
                 android:layout_width="0dp"
-                android:layout_height="100dp"
+                android:layout_height="80dp"
                 android:layout_columnWeight="1"
                 android:layout_margin="4dp"
-                android:layout_rowWeight="1"
-                android:foreground="?attr/selectableItemBackground"
                 android:clickable="true"
                 android:focusable="true"
-                app:cardBackgroundColor="@color/primary_light"
+                android:foreground="?android:attr/selectableItemBackground"
+                app:cardBackgroundColor="@color/bg_card"
                 app:cardCornerRadius="12dp"
-                app:cardElevation="2dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:gravity="center"
-                    android:orientation="vertical"
-                    android:padding="16dp">
-
-                    <ImageView
-                        android:layout_width="32dp"
-                        android:layout_height="32dp"
-                        android:layout_marginBottom="8dp"
-                        android:src="@drawable/ic_map"
-                        app:tint="@color/primary" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Start Monitoring"
-                        android:textColor="@color/primary_dark"
-                        android:textSize="13sp"
-                        android:textStyle="bold" />
+                app:cardElevation="0dp">
+                <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent"
+                    android:gravity="center" android:orientation="vertical">
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:text="🚀" android:textSize="20sp" />
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:text="Start Monitoring" android:textSize="11sp" android:textColor="@color/text_primary"
+                        android:layout_marginTop="4dp" />
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
@@ -338,38 +290,22 @@
             <androidx.cardview.widget.CardView
                 android:id="@+id/card_view_map"
                 android:layout_width="0dp"
-                android:layout_height="100dp"
+                android:layout_height="80dp"
                 android:layout_columnWeight="1"
                 android:layout_margin="4dp"
-                android:layout_rowWeight="1"
-                android:foreground="?attr/selectableItemBackground"
                 android:clickable="true"
                 android:focusable="true"
-                app:cardBackgroundColor="@color/white"
+                android:foreground="?android:attr/selectableItemBackground"
+                app:cardBackgroundColor="@color/bg_card"
                 app:cardCornerRadius="12dp"
-                app:cardElevation="2dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:gravity="center"
-                    android:orientation="vertical"
-                    android:padding="16dp">
-
-                    <ImageView
-                        android:layout_width="32dp"
-                        android:layout_height="32dp"
-                        android:layout_marginBottom="8dp"
-                        android:src="@drawable/ic_map"
-                        app:tint="@color/accent" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="View Map"
-                        android:textColor="@color/text_primary"
-                        android:textSize="13sp"
-                        android:textStyle="bold" />
+                app:cardElevation="0dp">
+                <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent"
+                    android:gravity="center" android:orientation="vertical">
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:text="🗺️" android:textSize="20sp" />
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:text="View Map" android:textSize="11sp" android:textColor="@color/text_primary"
+                        android:layout_marginTop="4dp" />
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
@@ -377,38 +313,22 @@
             <androidx.cardview.widget.CardView
                 android:id="@+id/card_view_alerts"
                 android:layout_width="0dp"
-                android:layout_height="100dp"
+                android:layout_height="80dp"
                 android:layout_columnWeight="1"
                 android:layout_margin="4dp"
-                android:layout_rowWeight="1"
-                android:foreground="?attr/selectableItemBackground"
                 android:clickable="true"
                 android:focusable="true"
-                app:cardBackgroundColor="@color/white"
+                android:foreground="?android:attr/selectableItemBackground"
+                app:cardBackgroundColor="@color/bg_card"
                 app:cardCornerRadius="12dp"
-                app:cardElevation="2dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:gravity="center"
-                    android:orientation="vertical"
-                    android:padding="16dp">
-
-                    <ImageView
-                        android:layout_width="32dp"
-                        android:layout_height="32dp"
-                        android:layout_marginBottom="8dp"
-                        android:src="@drawable/ic_alert"
-                        app:tint="@color/warning" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="View Alerts"
-                        android:textColor="@color/text_primary"
-                        android:textSize="13sp"
-                        android:textStyle="bold" />
+                app:cardElevation="0dp">
+                <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent"
+                    android:gravity="center" android:orientation="vertical">
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:text="⚠️" android:textSize="20sp" />
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:text="All Alerts" android:textSize="11sp" android:textColor="@color/text_primary"
+                        android:layout_marginTop="4dp" />
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
@@ -416,59 +336,56 @@
             <androidx.cardview.widget.CardView
                 android:id="@+id/card_settings"
                 android:layout_width="0dp"
-                android:layout_height="100dp"
+                android:layout_height="80dp"
                 android:layout_columnWeight="1"
                 android:layout_margin="4dp"
-                android:layout_rowWeight="1"
-                android:foreground="?attr/selectableItemBackground"
                 android:clickable="true"
                 android:focusable="true"
-                app:cardBackgroundColor="@color/white"
+                android:foreground="?android:attr/selectableItemBackground"
+                app:cardBackgroundColor="@color/bg_card"
                 app:cardCornerRadius="12dp"
-                app:cardElevation="2dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:gravity="center"
-                    android:orientation="vertical"
-                    android:padding="16dp">
-
-                    <ImageView
-                        android:layout_width="32dp"
-                        android:layout_height="32dp"
-                        android:layout_marginBottom="8dp"
-                        android:src="@drawable/ic_alert_active"
-                        app:tint="@color/text_secondary" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Settings"
-                        android:textColor="@color/text_primary"
-                        android:textSize="13sp"
-                        android:textStyle="bold" />
+                app:cardElevation="0dp">
+                <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent"
+                    android:gravity="center" android:orientation="vertical">
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:text="⚙️" android:textSize="20sp" />
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:text="Profile Settings" android:textSize="11sp" android:textColor="@color/text_primary"
+                        android:layout_marginTop="4dp" />
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
         </GridLayout>
 
-        <!-- Recent Activity -->
-        <TextView
-            android:layout_width="wrap_content"
+        <!-- ── RECENT ACTIVITY ───────────────────────────── -->
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="12dp"
-            android:text="Recent Activity"
-            android:textColor="#9AA5B8"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:fontFamily="sans-serif-medium" />
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="10dp">
+
+            <View
+                android:layout_width="4dp"
+                android:layout_height="18dp"
+                android:background="@color/accent"
+                android:layout_marginEnd="10dp" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Recent Activity"
+                android:textColor="@color/text_primary"
+                android:textSize="15sp"
+                android:textStyle="bold" />
+        </LinearLayout>
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recyclerViewDashboardDetections"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:nestedScrollingEnabled="false"
-            android:layout_marginBottom="24dp" />
+            android:layout_marginBottom="16dp" />
 
         <TextView
             android:id="@+id/tvEmptyRecent"
@@ -476,8 +393,10 @@
             android:layout_height="wrap_content"
             android:text="No recent detections"
             android:gravity="center"
-            android:padding="20dp"
-            android:textColor="#6B7A90"
+            android:padding="24dp"
+            android:textColor="@color/text_muted"
+            android:textSize="13sp"
             android:visibility="gone" />
+
     </LinearLayout>
 </androidx.core.widget.NestedScrollView>

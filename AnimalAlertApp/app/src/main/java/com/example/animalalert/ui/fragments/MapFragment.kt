@@ -100,10 +100,11 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         focusAnimalType: String? = null,
         focusDangerLevel: Int = 1
     ) {
+        val ctx = context ?: return
         googleMap?.clear()
         markers.clear()
         
-        val historyList = com.example.animalalert.utils.PreferenceManager(requireContext()).getDetectionHistory()
+        val historyList = com.example.animalalert.utils.PreferenceManager(ctx).getDetectionHistory()
         
         for (detection in historyList) {
             val lat = detection.latitude ?: continue
@@ -155,8 +156,9 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     override fun onMapReady(map: GoogleMap) {
         googleMap = map
         
+        val ctx = context ?: return
         if (ContextCompat.checkSelfPermission(
-                requireContext(),
+                ctx,
                 Manifest.permission.ACCESS_FINE_LOCATION
             ) == PackageManager.PERMISSION_GRANTED
         ) {
@@ -225,8 +227,9 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     }
 
     private fun getCurrentLocation() {
+        val ctx = context ?: return
         if (ContextCompat.checkSelfPermission(
-                requireContext(),
+                ctx,
                 Manifest.permission.ACCESS_FINE_LOCATION
             ) == PackageManager.PERMISSION_GRANTED
         ) {
@@ -252,12 +255,16 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                     }
                 }
             } catch (e: Exception) {
-                Toast.makeText(context, "Error fetching alert: ${e.message}", Toast.LENGTH_SHORT).show()
+                if (e !is CancellationException) {
+                    context?.let { Toast.makeText(it, "Error fetching alert: ${e.message}", Toast.LENGTH_SHORT).show() }
+                }
             }
         }
     }
 
     private fun displayAlertOnMap(alert: AlertResponse) {
+        val ctx = context ?: return
+        if (_binding == null) return
         if (alert.animal_detected && alert.location != null) {
             // Parse location (assuming format: "latitude,longitude" or address)
             val locationParts = alert.location.split(",")
@@ -309,7 +316,9 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                     
                     binding.tvStatus.text = "Animal detected: ${alert.animal_type ?: "Unknown"}"
                 } catch (e: Exception) {
-                    Toast.makeText(context, "Invalid location format", Toast.LENGTH_SHORT).show()
+                    if (e !is CancellationException) {
+                        context?.let { Toast.makeText(it, "Invalid location format", Toast.LENGTH_SHORT).show() }
+                    }
                 }
             } else {
                 binding.tvStatus.text = "Animal detected but location not available"

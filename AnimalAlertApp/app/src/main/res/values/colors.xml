@@ -1,48 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- ── Core Palette ─────────────────────────────────── -->
+    <color name="bg_deep">#0A0C10</color>
+    <color name="bg_card">#10141A</color>
+    <color name="bg_card2">#161C25</color>
+    <color name="bg_card3">#1D2535</color>
+    <color name="bg_input">#0D1018</color>
+
+    <color name="accent">#00E87A</color>
+    <color name="accent_dim">#00B85F</color>
+    <color name="accent_bg">#0D2E1A</color>
+
+    <color name="danger">#FF3B3B</color>
+    <color name="danger_dim">#CC1F1F</color>
+    <color name="danger_bg">#2A0A0A</color>
+
+    <color name="amber">#FFAA00</color>
+    <color name="amber_bg">#2A1E00</color>
+
+    <color name="blue">#3B82F6</color>
+    <color name="blue_bg">#0A1A35</color>
+
+    <!-- ── Text ──────────────────────────────────────────── -->
+    <color name="text_primary">#E8EDF5</color>
+    <color name="text_secondary">#9AA5B8</color>
+    <color name="text_muted">#6B7A90</color>
+    <color name="white">#FFFFFF</color>
+    <color name="black">#000000</color>
+
+    <!-- ── Borders ───────────────────────────────────────── -->
+    <color name="border">#1A2230</color>
+    <color name="border_accent">#0D3A20</color>
+    <color name="border_danger">#3A1010</color>
+
+    <!-- ── Navigation ───────────────────────────────────── -->
+    <color name="nav_bg">#0D0D0F</color>
+    <color name="nav_selected">#00E87A</color>
+    <color name="nav_unselected">#6B7A90</color>
+
+    <!-- ── Toolbar ───────────────────────────────────────── -->
+    <color name="toolbar_bg">#0F1520</color>
+    <color name="toolbar_text">#E8EDF5</color>
+
+    <!-- ── Background (used by activity_main) ───────────── -->
+    <color name="background">#0A0C10</color>
+    <color name="surface">#10141A</color>
+
+    <!-- ── Legacy aliases (kept for compatibility) ───────── -->
+    <color name="primary">#0F1520</color>
+    <color name="primary_dark">#0A0C10</color>
+    <color name="primary_light">#1D2535</color>
+    <color name="secondary">#00E87A</color>
+    <color name="success">#00E87A</color>
+    <color name="warning">#FFAA00</color>
+    <color name="error">#FF3B3B</color>
+    <color name="info">#3B82F6</color>
+    <color name="text_secondary_compat">#9AA5B8</color>
+    <color name="divider">#1A2230</color>
     <color name="purple_500">#7944C7</color>
     <color name="purple_700">#3700B3</color>
     <color name="teal_200">#03DAC5</color>
-    <color name="white">#FFFFFF</color>
-    <color name="black">#000000</color>
-    <color name="nav_selected">#4CAF50</color>
-    <color name="nav_unselected">#757575</color>
 
-    <color name="primary">#1E3A8A</color>
-    <color name="primary_dark">#1E40AF</color>
-    <color name="primary_light">#E0F2FE</color>
-
-    <!-- Secondary Colors -->
-    <color name="secondary">#4F46E5</color>
-    <color name="accent">#10B981</color>
-
-    <!-- Status Colors -->
-    <color name="success">#10B981</color>
-    <color name="warning">#F59E0B</color>
-    <color name="error">#EF4444</color>
-    <color name="info">#3B82F6</color>
-
-    <!-- Text Colors -->
-    <color name="text_primary">#1F2937</color>
-    <color name="text_secondary">#6B7280</color>
-
-    <!-- Background Colors -->
-    <color name="background">#F8F9FA</color>
-    <color name="surface">#FFFFFF</color>
-    <color name="divider">#E5E7EB</color>
-
-    <!-- Bottom Navigation -->
-
-    <!-- Settings Page Colors (Light Mode) -->
-    <color name="settings_bg">#F0F2F5</color>
-    <color name="settings_card_bg">#FFFFFF</color>
-    <color name="settings_text_primary">#0F1520</color>
-    <color name="settings_text_secondary">#6B7280</color>
-    <color name="settings_divider">#E5E7EB</color>
-    <color name="settings_section_label">#00C16A</color>
-    <color name="settings_danger">#EF4444</color>
-    <color name="settings_chevron">#BDBDBD</color>
-
-    <!-- Toolbar Colors -->
-    <color name="toolbar_bg">#FFFFFF</color>
-    <color name="toolbar_text">#0F1520</color>
+    <!-- ── Settings ─────────────────────────────────────── -->
+    <color name="settings_bg">#0A0C10</color>
+    <color name="settings_card_bg">#161C25</color>
+    <color name="settings_text_primary">#E8EDF5</color>
+    <color name="settings_text_secondary">#9AA5B8</color>
+    <color name="settings_divider">#1A2230</color>
+    <color name="settings_section_label">#00E87A</color>
+    <color name="settings_danger">#FF3B3B</color>
+    <color name="settings_chevron">#6B7A90</color>
 </resources>

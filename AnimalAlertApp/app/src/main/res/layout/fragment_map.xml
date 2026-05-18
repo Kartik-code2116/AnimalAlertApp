@@ -2,96 +2,117 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@color/bg_deep">
 
+    <!-- Full-screen map -->
     <fragment
         android:id="@+id/map"
         android:name="com.google.android.gms.maps.SupportMapFragment"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent" />
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 
+    <!-- ── TOP OVERLAY CARD ──────────────────────────────── -->
     <androidx.cardview.widget.CardView
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_margin="16dp"
-        app:cardCornerRadius="12dp"
-        app:cardElevation="8dp"
-        app:layout_constraintTop_toTopOf="parent">
+        android:layout_margin="14dp"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="12dp"
+        app:cardBackgroundColor="#EE161C25"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="16dp"
-            android:background="#161C25">
+            android:padding="14dp">
 
-            <TextView
-                android:id="@+id/tvStatus"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Loading map..."
-                android:textSize="16sp"
-                android:textStyle="bold"
-                android:textColor="#E8EDF5"
-                android:layout_marginBottom="8dp" />
-
-            <!-- Map Index / Legend -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:paddingBottom="12dp"
-                android:gravity="center_vertical">
-                
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="🔴 Wild (Danger)"
-                    android:textSize="13sp"
-                    android:textStyle="bold"
-                    android:textColor="#E8EDF5"
-                    android:layout_marginEnd="16dp" />
+                android:gravity="center_vertical"
+                android:layout_marginBottom="10dp">
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="🔵 Safe (Low Risk)"
-                    android:textSize="13sp"
-                    android:textStyle="bold"
-                    android:textColor="#E8EDF5" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
-
-                <Button
-                    android:id="@+id/btnMyLocation"
+                <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="My Location"
-                    android:layout_marginEnd="8dp"
-                    android:background="@drawable/button_background"
-                    android:textColor="#FFFFFF" />
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/tvStatus"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Live Detection Map"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/text_primary" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="3 cameras  ·  2 active threats"
+                        android:textSize="11sp"
+                        android:textColor="@color/text_muted"
+                        android:layout_marginTop="2dp" />
+                </LinearLayout>
+
+                <!-- My location button -->
+                <Button
+                    android:id="@+id/btnMyLocation"
+                    android:layout_width="wrap_content"
+                    android:layout_height="34dp"
+                    android:text="📍  Me"
+                    android:textSize="11sp"
+                    android:textColor="@color/text_primary"
+                    android:background="@drawable/card_border_default"
+                    android:paddingHorizontal="12dp"
+                    android:layout_marginEnd="6dp" />
 
                 <Button
                     android:id="@+id/btnRefresh"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="Refresh"
-                    android:layout_marginStart="8dp"
-                    android:background="@drawable/button_background"
-                    android:textColor="#FFFFFF" />
+                    android:layout_width="wrap_content"
+                    android:layout_height="34dp"
+                    android:text="↻  Refresh"
+                    android:textSize="11sp"
+                    android:textColor="@color/accent"
+                    android:background="@drawable/card_border_accent"
+                    android:paddingHorizontal="12dp" />
+            </LinearLayout>
 
+            <!-- Legend -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <View android:layout_width="9dp" android:layout_height="9dp"
+                    android:background="@drawable/ic_circle_orange" android:layout_marginEnd="5dp" />
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:text="Dangerous" android:textSize="11sp" android:textColor="@color/danger"
+                    android:layout_marginEnd="16dp" />
+
+                <View android:layout_width="9dp" android:layout_height="9dp"
+                    android:background="@drawable/ic_circle_green" android:layout_marginEnd="5dp" />
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:text="Safe" android:textSize="11sp" android:textColor="@color/accent"
+                    android:layout_marginEnd="16dp" />
+
+                <View android:layout_width="9dp" android:layout_height="9dp"
+                    android:background="@drawable/ic_circle_blue" android:layout_marginEnd="5dp" />
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:text="Camera" android:textSize="11sp" android:textColor="@color/blue" />
             </LinearLayout>
         </LinearLayout>
     </androidx.cardview.widget.CardView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
-
-

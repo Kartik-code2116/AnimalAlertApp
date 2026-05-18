@@ -47,7 +47,7 @@ class DetectionAdapter(
     override fun getItemCount(): Int = detections.size
 
     inner class DetectionViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        private val cardView: CardView = itemView.findViewById(R.id.cardDetection)
+        private val cardView: View = itemView.findViewById(R.id.cardDetection)
         private val tvDetIcon: TextView = itemView.findViewById(R.id.tvDetIcon)
         private val tvAnimalType: TextView = itemView.findViewById(R.id.tvAnimalType)
         private val tvConfidence: TextView = itemView.findViewById(R.id.tvConfidence)
@@ -79,7 +79,7 @@ class DetectionAdapter(
 
             // Set overall card tint.
             val cardBg = (dangerColor and 0x00FFFFFF) or 0x11000000 // subtle tint
-            cardView.setCardBackgroundColor(cardBg)
+            cardView.setBackgroundColor(cardBg)
 
             // Tint the icon container slightly as well.
             tvDetIcon.setBackgroundColor(cardBg)

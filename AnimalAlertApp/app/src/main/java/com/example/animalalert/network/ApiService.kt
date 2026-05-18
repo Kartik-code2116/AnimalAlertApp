@@ -14,6 +14,7 @@ import retrofit2.http.POST
 interface ApiService {
 
     @GET("/latest-alert")
+
     fun getLatestAlert(): Call<AlertResponse>
 
     @GET("/health")

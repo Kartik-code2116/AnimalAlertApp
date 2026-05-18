@@ -3,185 +3,290 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#0A0C10"
+    android:background="@color/bg_deep"
     android:fillViewport="true">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="20dp">
+        android:padding="16dp">
 
+        <!-- ── SERVICE STATUS ─────────────────────────────── -->
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="20dp"
-            app:cardCornerRadius="16dp"
-            app:cardElevation="4dp"
-            android:background="#161C25">
+            android:layout_marginBottom="14dp"
+            app:cardBackgroundColor="@color/bg_card2"
+            app:cardCornerRadius="14dp"
+            app:cardElevation="0dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="24dp"
-                android:gravity="center">
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:padding="16dp">
 
-                <ImageView
-                    android:id="@+id/ivStatus"
-                    android:layout_width="120dp"
-                    android:layout_height="120dp"
-                    android:src="@drawable/ic_alert_inactive"
-                    android:layout_marginBottom="16dp" />
+                <!-- Green pulse dot -->
+                <View
+                    android:layout_width="10dp"
+                    android:layout_height="10dp"
+                    android:background="@drawable/ic_circle_green"
+                    android:layout_marginEnd="12dp" />
 
-                <TextView
-                    android:id="@+id/tvStatus"
-                    android:layout_width="wrap_content"
+                <LinearLayout
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:text="System Active - Monitoring..."
-                    android:textSize="20sp"
-                    android:textStyle="bold"
-                    android:textColor="#E8EDF5"
-                    android:gravity="center" />
+                    android:layout_weight="1"
+                    android:orientation="vertical">
 
+                    <TextView
+                        android:id="@+id/tvStatus"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Service Running"
+                        android:textSize="15sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/text_primary" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="HTTP Polling  ·  Connected"
+                        android:textSize="11sp"
+                        android:textColor="@color/text_muted"
+                        android:layout_marginTop="1dp" />
+                </LinearLayout>
+
+                <!-- Toggle placeholder (visual only – controlled by service) -->
+                <View
+                    android:layout_width="38dp"
+                    android:layout_height="20dp"
+                    android:background="@color/accent"
+                    android:layout_marginStart="8dp" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
+        <!-- ── LIVE ALERT CARD ────────────────────────────── -->
         <androidx.cardview.widget.CardView
             android:id="@+id/cardAlert"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="20dp"
+            android:layout_marginBottom="14dp"
             android:visibility="gone"
             android:clickable="true"
             android:focusable="true"
             android:foreground="?android:attr/selectableItemBackground"
-            app:cardCornerRadius="16dp"
-            app:cardElevation="4dp"
-            android:background="#22000000">
+            app:cardBackgroundColor="#1A0808"
+            app:cardCornerRadius="14dp"
+            app:cardElevation="0dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <!-- Red top bar -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:background="#220A0A"
+                    android:paddingHorizontal="16dp"
+                    android:paddingVertical="10dp">
+
+                    <View
+                        android:layout_width="7dp"
+                        android:layout_height="7dp"
+                        android:background="@drawable/ic_circle_orange"
+                        android:layout_marginEnd="7dp" />
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="LIVE THREAT"
+                        android:textSize="10sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/danger"
+                        android:letterSpacing="0.15" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="LVL 5"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/danger"
+                        android:background="@drawable/card_border_danger"
+                        android:paddingHorizontal="10dp"
+                        android:paddingVertical="3dp" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:id="@+id/tvAnimalType"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Type: -"
+                        android:textSize="20sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/text_primary"
+                        android:layout_marginBottom="10dp" />
+
+                    <!-- Confidence bar -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="8dp">
+
+                        <ProgressBar
+                            android:layout_width="0dp"
+                            android:layout_height="5dp"
+                            android:layout_weight="1"
+                            style="?android:attr/progressBarStyleHorizontal"
+                            android:progressDrawable="@null"
+                            android:progress="0"
+                            android:max="100"
+                            android:layout_marginEnd="10dp" />
+
+                        <TextView
+                            android:id="@+id/tvConfidence"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Confidence: -"
+                            android:textSize="13sp"
+                            android:textColor="@color/text_secondary" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/tvLocation"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Location: -"
+                        android:textSize="11sp"
+                        android:textColor="@color/text_muted" />
+                </LinearLayout>
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <!-- ── MONITORING STATUS (status image) ──────────── -->
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="14dp"
+            app:cardBackgroundColor="@color/bg_card"
+            app:cardCornerRadius="14dp"
+            app:cardElevation="0dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="20dp">
+                android:padding="20dp"
+                android:gravity="center">
+
+                <ImageView
+                    android:id="@+id/ivStatus"
+                    android:layout_width="100dp"
+                    android:layout_height="100dp"
+                    android:src="@drawable/ic_alert_inactive"
+                    android:layout_marginBottom="12dp" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Alert Details"
-                    android:textSize="18sp"
-                    android:textStyle="bold"
-                    android:textColor="#FF3B3B"
-                    android:layout_marginBottom="16dp" />
-
-                <TextView
-                    android:id="@+id/tvAnimalType"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Type: -"
-                    android:textSize="16sp"
-                    android:textColor="#E8EDF5"
-                    android:layout_marginBottom="8dp" />
-
-                <TextView
-                    android:id="@+id/tvConfidence"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Confidence: -"
-                    android:textSize="16sp"
-                    android:textColor="#E8EDF5"
-                    android:layout_marginBottom="8dp" />
-
-                <TextView
-                    android:id="@+id/tvLocation"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Location: -"
-                    android:textSize="16sp"
-                    android:textColor="#9AA5B8" />
-
+                    android:text="Monitoring for animals…"
+                    android:textSize="14sp"
+                    android:textColor="@color/text_muted"
+                    android:gravity="center" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
-        <Button
-            android:id="@+id/btnStartService"
-            android:layout_width="match_parent"
-            android:layout_height="60dp"
-            android:text="Start Alert Service"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:background="@drawable/button_background"
-            android:textColor="#FFFFFF"
-            android:layout_marginBottom="12dp"
-            android:visibility="gone" />
-
-        <Button
-            android:id="@+id/btnOpenCamera"
-            android:layout_width="match_parent"
-            android:layout_height="60dp"
-            android:text="📷 Open Camera Detection"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:background="@drawable/button_background"
-            android:textColor="#FFFFFF"
-            android:layout_marginBottom="12dp"
-            android:visibility="gone" />
-
+        <!-- ── SIREN BUTTON ──────────────────────────────── -->
         <Button
             android:id="@+id/btnStopSiren"
             android:layout_width="match_parent"
-            android:layout_height="60dp"
-            android:text="🔊 STOP SIREN"
-            android:textSize="18sp"
+            android:layout_height="58dp"
+            android:text="🔊  STOP SIREN"
+            android:textSize="16sp"
             android:textStyle="bold"
+            android:textColor="@color/white"
             android:background="@drawable/button_stop_background"
-            android:textColor="#FFFFFF"
+            android:letterSpacing="0.06"
             android:layout_marginBottom="20dp" />
+
+        <!-- ── TODAY'S LOG ───────────────────────────────── -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="10dp">
+
+            <View
+                android:layout_width="4dp"
+                android:layout_height="18dp"
+                android:background="@color/accent"
+                android:layout_marginEnd="10dp" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Today's Log"
+                android:textColor="@color/text_primary"
+                android:textSize="15sp"
+                android:textStyle="bold" />
+        </LinearLayout>
 
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:cardCornerRadius="16dp"
-            app:cardElevation="4dp"
-            android:background="#161C25">
+            app:cardBackgroundColor="@color/bg_card"
+            app:cardCornerRadius="14dp"
+            app:cardElevation="0dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="20dp">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Today's Log"
-                    android:textSize="18sp"
-                    android:textStyle="bold"
-                    android:textColor="#E8EDF5"
-                    android:layout_marginBottom="12dp" />
+                android:paddingVertical="4dp">
 
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/recyclerViewDetections"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:nestedScrollingEnabled="false"
-                    android:minHeight="200dp" />
+                    android:minHeight="120dp" />
 
                 <TextView
                     android:id="@+id/tvNoDetections"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="No recent detections"
-                    android:textSize="14sp"
-                    android:textColor="#6B7A90"
+                    android:text="No detections yet today"
+                    android:textSize="13sp"
+                    android:textColor="@color/text_muted"
                     android:gravity="center"
-                    android:padding="20dp"
+                    android:padding="24dp"
                     android:visibility="gone" />
-
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
+        <!-- hidden buttons kept for service compat -->
+        <Button android:id="@+id/btnStartService" android:layout_width="match_parent"
+            android:layout_height="0dp" android:visibility="gone" />
+        <Button android:id="@+id/btnOpenCamera" android:layout_width="match_parent"
+            android:layout_height="0dp" android:visibility="gone" />
+
     </LinearLayout>
 </androidx.core.widget.NestedScrollView>
-

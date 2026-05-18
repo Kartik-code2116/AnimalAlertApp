@@ -1,404 +1,318 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#0A0C10"
+    android:background="@color/bg_deep"
     android:fillViewport="true">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="20dp">
+        android:orientation="vertical">
 
-        <androidx.cardview.widget.CardView
+        <!-- ── PROFILE HEADER ─────────────────────────────── -->
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="20dp"
-            app:cardCornerRadius="16dp"
-            app:cardElevation="4dp"
-            android:background="#161C25">
+            android:orientation="vertical"
+            android:gravity="center"
+            android:paddingTop="28dp"
+            android:paddingBottom="20px"
+            android:background="#0A0F18">
 
+            <!-- Avatar ring -->
             <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="24dp"
-                android:gravity="center">
+                android:layout_width="72dp"
+                android:layout_height="72dp"
+                android:gravity="center"
+                android:background="@drawable/card_border_accent"
+                android:layout_marginBottom="12dp">
 
                 <ImageView
-                    android:layout_width="100dp"
-                    android:layout_height="100dp"
+                    android:layout_width="44dp"
+                    android:layout_height="44dp"
                     android:src="@drawable/ic_profile"
-                    android:layout_marginBottom="12dp" />
-
-                <TextView
-                    android:id="@+id/tvUserName"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="User Name"
-                    android:textColor="#E8EDF5"
-                    android:textSize="24sp"
-                    android:textStyle="bold"
-                    android:layout_marginBottom="4dp" />
-
-                <TextView
-                    android:id="@+id/tvUserEmail"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="user@example.com"
-                    android:textSize="14sp"
-                    android:textColor="#9AA5B8"
-                    android:layout_marginBottom="16dp" />
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnEditProfile"
-                    android:layout_width="wrap_content"
-                    android:layout_height="40dp"
-                    android:text="Edit Profile"
-                    android:textSize="12sp"
-                    android:textColor="#FFFFFF"
-                    app:cornerRadius="20dp"
-                    android:backgroundTint="#2196F3"
-                    style="@style/Widget.MaterialComponents.Button" />
-
+                    app:tint="@color/accent" />
             </LinearLayout>
-        </androidx.cardview.widget.CardView>
 
-        <!-- Account Information Section -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Account Information"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            android:textColor="#E8EDF5"
-            android:layout_marginStart="4dp"
-            android:layout_marginBottom="12dp" />
-
-        <androidx.cardview.widget.CardView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            app:cardCornerRadius="12dp"
-            app:cardElevation="2dp"
-            app:cardBackgroundColor="#161C25">
-
-            <LinearLayout
-                android:layout_width="match_parent"
+            <TextView
+                android:id="@+id/tvUserName"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="20dp">
+                android:text="User Name"
+                android:textColor="@color/text_primary"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="3dp" />
+
+            <TextView
+                android:id="@+id/tvUserEmail"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="user@example.com"
+                android:textSize="12sp"
+                android:textColor="@color/text_muted"
+                android:layout_marginBottom="12dp" />
+
+            <!-- Role badge -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:background="@drawable/card_border_accent"
+                android:paddingHorizontal="14dp"
+                android:paddingVertical="5dp"
+                android:layout_marginBottom="20dp">
+
+                <View android:layout_width="6dp" android:layout_height="6dp"
+                    android:background="@drawable/ic_circle_green" android:layout_marginEnd="6dp" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Contact Information"
-                    android:textSize="18sp"
-                    android:textStyle="bold"
-                    android:textColor="#E8EDF5"
-                    android:layout_marginBottom="16dp" />
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:layout_marginBottom="12dp">
-
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="Phone:"
-                        android:textSize="14sp"
-                        android:textColor="#9AA5B8" />
-
-                    <TextView
-                        android:id="@+id/tvUserPhone"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="+1234567890"
-                        android:textSize="14sp"
-                        android:textStyle="bold"
-                        android:textColor="#E8EDF5"
-                        android:gravity="end" />
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal">
-
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="Last Login:"
-                        android:textSize="14sp"
-                        android:textColor="#9AA5B8" />
-
-                    <TextView
-                        android:id="@+id/tvLastLogin"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="Today"
-                        android:textSize="14sp"
-                        android:textStyle="bold"
-                        android:textColor="#E8EDF5"
-                        android:gravity="end" />
-                </LinearLayout>
-
+                    android:text="Field Operator"
+                    android:textSize="11sp"
+                    android:textColor="@color/accent"
+                    android:letterSpacing="0.1" />
             </LinearLayout>
-        </androidx.cardview.widget.CardView>
 
-        <!-- Statistics Section -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Detection Statistics"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            android:textColor="#E8EDF5"
-            android:layout_marginStart="4dp"
-            android:layout_marginBottom="12dp" />
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnEditProfile"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:text="Edit Profile"
+                android:textSize="12sp"
+                android:textColor="@color/text_primary"
+                android:backgroundTint="@color/bg_card3"
+                app:cornerRadius="20dp"
+                style="@style/Widget.MaterialComponents.Button"
+                android:layout_marginBottom="16dp" />
+        </LinearLayout>
 
-        <androidx.cardview.widget.CardView
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            app:cardCornerRadius="12dp"
-            app:cardElevation="2dp"
-            app:cardBackgroundColor="#161C25">
+            android:orientation="vertical"
+            android:padding="16dp">
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="16dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:layout_marginBottom="16dp">
-
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:orientation="vertical"
-                        android:gravity="center"
-                        android:background="@drawable/stat_background"
-                        android:padding="16dp"
-                        android:layout_marginEnd="8dp">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Today"
-                            android:textSize="12sp"
-                            android:textColor="#9AA5B8"
-                            android:layout_marginBottom="4dp" />
-
-                        <TextView
-                            android:id="@+id/tvTodayDetections"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="0"
-                            android:textSize="28sp"
-                            android:textStyle="bold"
-                            android:textColor="#4CAF50" />
-                    </LinearLayout>
-
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:orientation="vertical"
-                        android:gravity="center"
-                        android:background="@drawable/stat_background"
-                        android:padding="16dp"
-                        android:layout_marginStart="8dp">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Total"
-                            android:textSize="12sp"
-                            android:textColor="#9AA5B8"
-                            android:layout_marginBottom="4dp" />
-
-                        <TextView
-                            android:id="@+id/tvTotalDetections"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="0"
-                            android:textSize="28sp"
-                            android:textStyle="bold"
-                            android:textColor="#2196F3" />
-                    </LinearLayout>
-                </LinearLayout>
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnRefreshStats"
-                    android:layout_width="match_parent"
-                    android:layout_height="48dp"
-                    android:text="Refresh Statistics"
-                    android:textSize="14sp"
-                    android:textColor="#FFFFFF"
-                    app:cornerRadius="8dp"
-                    android:backgroundTint="#2A3441"
-                    style="@style/Widget.MaterialComponents.Button" />
-
+            <!-- ── NOTIFICATIONS SECTION ───────────────────── -->
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="horizontal" android:gravity="center_vertical"
+                android:layout_marginBottom="8dp">
+                <View android:layout_width="3dp" android:layout_height="14dp"
+                    android:background="@color/accent" android:layout_marginEnd="8dp" />
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:text="NOTIFICATIONS" android:textSize="10sp" android:textStyle="bold"
+                    android:textColor="@color/accent" android:letterSpacing="0.15" />
             </LinearLayout>
-        </androidx.cardview.widget.CardView>
 
-        <!-- Notifications Section -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Notification Preferences"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            android:textColor="#E8EDF5"
-            android:layout_marginStart="4dp"
-            android:layout_marginBottom="12dp" />
-
-        <androidx.cardview.widget.CardView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            app:cardCornerRadius="12dp"
-            app:cardElevation="2dp"
-            app:cardBackgroundColor="#161C25">
-
-            <LinearLayout
+            <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="16dp">
+                android:layout_marginBottom="18dp"
+                app:cardBackgroundColor="@color/bg_card2"
+                app:cardCornerRadius="14dp"
+                app:cardElevation="0dp">
 
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:layout_marginBottom="16dp">
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:orientation="vertical">
 
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:orientation="vertical">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Enable Notifications"
-                            android:textSize="16sp"
-                            android:textColor="#E8EDF5"
-                            android:textStyle="bold" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Receive alerts about animal detections"
-                            android:textSize="12sp"
-                            android:textColor="#9AA5B8" />
+                    <!-- In-App -->
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="52dp"
+                        android:orientation="horizontal" android:gravity="center_vertical"
+                        android:paddingHorizontal="16dp">
+                        <LinearLayout android:layout_width="28dp" android:layout_height="28dp"
+                            android:gravity="center" android:background="@drawable/card_border_danger"
+                            android:layout_marginEnd="12dp">
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                                android:text="🔔" android:textSize="13sp" />
+                        </LinearLayout>
+                        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content"
+                            android:layout_weight="1" android:orientation="vertical">
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                                android:text="In-App Alerts" android:textSize="14sp"
+                                android:textStyle="bold" android:textColor="@color/text_primary" />
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                                android:text="Push notifications" android:textSize="11sp"
+                                android:textColor="@color/text_muted" />
+                        </LinearLayout>
+                        <androidx.appcompat.widget.SwitchCompat
+                            android:id="@+id/switchInAppNotifications"
+                            android:layout_width="wrap_content" android:layout_height="wrap_content" />
                     </LinearLayout>
 
+                    <View android:layout_width="match_parent" android:layout_height="1dp"
+                        android:background="@color/border" android:layout_marginHorizontal="16dp" />
+
+                    <!-- SMS -->
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="52dp"
+                        android:orientation="horizontal" android:gravity="center_vertical"
+                        android:paddingHorizontal="16dp">
+                        <LinearLayout android:layout_width="28dp" android:layout_height="28dp"
+                            android:gravity="center" android:background="@drawable/card_border_default"
+                            android:layout_marginEnd="12dp">
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                                android:text="💬" android:textSize="13sp" />
+                        </LinearLayout>
+                        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content"
+                            android:layout_weight="1" android:orientation="vertical">
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                                android:text="SMS Alerts" android:textSize="14sp"
+                                android:textStyle="bold" android:textColor="@color/text_primary" />
+                            <TextView android:id="@+id/tvUserPhone"
+                                android:layout_width="wrap_content" android:layout_height="wrap_content"
+                                android:text="+1234567890" android:textSize="11sp"
+                                android:textColor="@color/text_muted" />
+                        </LinearLayout>
+                        <androidx.appcompat.widget.SwitchCompat
+                            android:id="@+id/switchSmsNotifications"
+                            android:layout_width="wrap_content" android:layout_height="wrap_content" />
+                    </LinearLayout>
+
+                    <View android:layout_width="match_parent" android:layout_height="1dp"
+                        android:background="@color/border" android:layout_marginHorizontal="16dp" />
+
+                    <!-- Email -->
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="52dp"
+                        android:orientation="horizontal" android:gravity="center_vertical"
+                        android:paddingHorizontal="16dp">
+                        <LinearLayout android:layout_width="28dp" android:layout_height="28dp"
+                            android:gravity="center" android:background="@drawable/card_border_accent"
+                            android:layout_marginEnd="12dp">
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                                android:text="📧" android:textSize="13sp" />
+                        </LinearLayout>
+                        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content"
+                            android:layout_weight="1" android:orientation="vertical">
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                                android:text="Email Alerts" android:textSize="14sp"
+                                android:textStyle="bold" android:textColor="@color/text_primary" />
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                                android:text="Detection reports via email" android:textSize="11sp"
+                                android:textColor="@color/text_muted" />
+                        </LinearLayout>
+                        <androidx.appcompat.widget.SwitchCompat
+                            android:id="@+id/switchEmailNotifications"
+                            android:layout_width="wrap_content" android:layout_height="wrap_content" />
+                    </LinearLayout>
+
+                    <!-- Master notifications toggle (hidden but used by code) -->
                     <androidx.appcompat.widget.SwitchCompat
                         android:id="@+id/switchNotifications"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content" />
+                        android:layout_width="wrap_content" android:layout_height="0dp"
+                        android:visibility="gone" />
                 </LinearLayout>
+            </androidx.cardview.widget.CardView>
 
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:background="#E0E0E0"
-                    android:layout_marginVertical="8dp" />
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:layout_marginBottom="12dp">
-
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="In-App Notifications"
-                        android:textSize="14sp"
-                        android:textColor="#9AA5B8" />
-
-                    <androidx.appcompat.widget.SwitchCompat
-                        android:id="@+id/switchInAppNotifications"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content" />
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:layout_marginBottom="12dp">
-
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="Email Notifications"
-                        android:textSize="14sp"
-                        android:textColor="#9AA5B8" />
-
-                    <androidx.appcompat.widget.SwitchCompat
-                        android:id="@+id/switchEmailNotifications"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content" />
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical">
-
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="SMS Notifications"
-                        android:textSize="14sp"
-                        android:textColor="#9AA5B8" />
-
-                    <androidx.appcompat.widget.SwitchCompat
-                        android:id="@+id/switchSmsNotifications"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content" />
-                </LinearLayout>
-
+            <!-- ── DETECTION STATS ─────────────────────────── -->
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="horizontal" android:gravity="center_vertical"
+                android:layout_marginBottom="8dp">
+                <View android:layout_width="3dp" android:layout_height="14dp"
+                    android:background="@color/accent" android:layout_marginEnd="8dp" />
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:text="DETECTION STATISTICS" android:textSize="10sp" android:textStyle="bold"
+                    android:textColor="@color/accent" android:letterSpacing="0.15" />
             </LinearLayout>
-        </androidx.cardview.widget.CardView>
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnLogout"
-            android:layout_width="match_parent"
-            android:layout_height="56dp"
-            android:text="Logout"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            android:textColor="#FFFFFF"
-            app:cornerRadius="12dp"
-            android:backgroundTint="#DC3545"
-            style="@style/Widget.MaterialComponents.Button" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:weightSum="2"
+                android:layout_marginBottom="18dp">
 
+                <androidx.cardview.widget.CardView
+                    android:layout_width="0dp"
+                    android:layout_height="80dp"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="6dp"
+                    app:cardBackgroundColor="@color/bg_card2"
+                    app:cardCornerRadius="14dp"
+                    app:cardElevation="0dp">
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent"
+                        android:gravity="center" android:orientation="vertical">
+                        <TextView android:id="@+id/tvTodayDetections"
+                            android:layout_width="wrap_content" android:layout_height="wrap_content"
+                            android:text="0" android:textSize="28sp" android:textStyle="bold"
+                            android:textColor="@color/accent" />
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                            android:text="Today" android:textSize="11sp" android:textColor="@color/text_muted" />
+                    </LinearLayout>
+                </androidx.cardview.widget.CardView>
+
+                <androidx.cardview.widget.CardView
+                    android:layout_width="0dp"
+                    android:layout_height="80dp"
+                    android:layout_weight="1"
+                    android:layout_marginStart="6dp"
+                    app:cardBackgroundColor="@color/bg_card2"
+                    app:cardCornerRadius="14dp"
+                    app:cardElevation="0dp">
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent"
+                        android:gravity="center" android:orientation="vertical">
+                        <TextView android:id="@+id/tvTotalDetections"
+                            android:layout_width="wrap_content" android:layout_height="wrap_content"
+                            android:text="0" android:textSize="28sp" android:textStyle="bold"
+                            android:textColor="@color/blue" />
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                            android:text="Total" android:textSize="11sp" android:textColor="@color/text_muted" />
+                    </LinearLayout>
+                </androidx.cardview.widget.CardView>
+            </LinearLayout>
+
+            <!-- Refresh -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnRefreshStats"
+                android:layout_width="match_parent"
+                android:layout_height="44dp"
+                android:text="Refresh Statistics"
+                android:textSize="13sp"
+                android:textColor="@color/text_secondary"
+                android:backgroundTint="@color/bg_card3"
+                app:cornerRadius="10dp"
+                style="@style/Widget.MaterialComponents.Button"
+                android:layout_marginBottom="18dp" />
+
+            <!-- ── LAST LOGIN ───────────────────────────────── -->
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="18dp"
+                app:cardBackgroundColor="@color/bg_card2"
+                app:cardCornerRadius="14dp"
+                app:cardElevation="0dp">
+
+                <LinearLayout android:layout_width="match_parent" android:layout_height="52dp"
+                    android:orientation="horizontal" android:gravity="center_vertical"
+                    android:paddingHorizontal="16dp">
+                    <TextView android:layout_width="0dp" android:layout_height="wrap_content"
+                        android:layout_weight="1" android:text="Last Login"
+                        android:textSize="14sp" android:textColor="@color/text_muted" />
+                    <TextView android:id="@+id/tvLastLogin"
+                        android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:text="Today" android:textSize="14sp" android:textStyle="bold"
+                        android:textColor="@color/text_primary" />
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <!-- ── LOGOUT BUTTON ────────────────────────────── -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnLogout"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:text="↩  Sign Out"
+                android:textSize="15sp"
+                android:textStyle="bold"
+                android:textColor="@color/danger"
+                android:backgroundTint="#1A0808"
+                app:cornerRadius="12dp"
+                app:strokeColor="@color/border_danger"
+                app:strokeWidth="1dp"
+                style="@style/Widget.MaterialComponents.Button" />
+
+        </LinearLayout>
     </LinearLayout>
-</ScrollView>
-
+</androidx.core.widget.NestedScrollView>
