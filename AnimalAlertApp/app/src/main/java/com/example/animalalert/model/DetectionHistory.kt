@@ -12,7 +12,8 @@ data class DetectionHistory(
     val latitude: Double?,
     val longitude: Double?,
     val timestamp: Long,
-    val dangerLevel: Int // 1-5 (1=Low, 5=Very High)
+    val dangerLevel: Int, // 1-5 (1=Low, 5=Very High)
+    val image: String? = null
 ) : Parcelable {
     
     fun getDangerLevelText(): String {

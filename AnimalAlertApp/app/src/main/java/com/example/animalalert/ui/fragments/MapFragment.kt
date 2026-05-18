@@ -94,7 +94,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             if (lat != 0.0 && lng != 0.0) {
                 // If map is already ready, show detection immediately
                 googleMap?.let {
-                    showAllDetectionsOnMap(lat, lng, animalType, dangerLevel)
+                    showAllDetectionsOnMap(lat, lng, animalType, dangerLevel, confidence)
                     return true
                 }
                 // Otherwise, it will be shown in onMapReady
@@ -108,7 +108,8 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         focusLat: Double? = null,
         focusLng: Double? = null,
         focusAnimalType: String? = null,
-        focusDangerLevel: Int = 1
+        focusDangerLevel: Int = 1,
+        focusConfidence: Float = 90f
     ) {
         val ctx = context ?: return
         // Remove only detection layer markers/circles, keeping camera layers intact!
@@ -119,15 +120,24 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         
         val historyList = com.example.animalalert.utils.PreferenceManager(ctx).getDetectionHistory()
         
+        var foundFocusInHistory = false
         for (detection in historyList) {
             val lat = detection.latitude ?: continue
             val lng = detection.longitude ?: continue
             val latLng = LatLng(lat, lng)
             val dangerText = detection.getDangerLevelText()
             val isWild = detection.dangerLevel >= 3
-            val dotIcon = if (isWild) vectorToBitmap(R.drawable.ic_red_dot) else vectorToBitmap(R.drawable.ic_blue_dot)
-            val circleStroke = if (isWild) android.graphics.Color.RED else android.graphics.Color.BLUE
-            val circleFill = if (isWild) 0x33FF0000 else 0x330000FF
+            val dotIcon = if (isWild) vectorToBitmap(R.drawable.ic_red_dot) else vectorToBitmap(R.drawable.ic_green_dot)
+            val circleStroke = if (isWild) android.graphics.Color.RED else android.graphics.Color.GREEN
+            val circleFill = if (isWild) 0x33FF0000 else 0x3300FF00
+            
+            val isFocusMatch = focusLat != null && focusLng != null && 
+                    kotlin.math.abs(lat - focusLat) < 0.0001 && 
+                    kotlin.math.abs(lng - focusLng) < 0.0001
+            
+            if (isFocusMatch) {
+                foundFocusInHistory = true
+            }
             
             val marker = googleMap?.addMarker(
                 MarkerOptions()
@@ -137,13 +147,54 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                     .anchor(0.5f, 0.5f) // Center the dot
                     .icon(dotIcon)
             )
-            marker?.let { markers.add(it) }
+            marker?.let { 
+                markers.add(it)
+                if (isFocusMatch) {
+                    it.showInfoWindow()
+                }
+            }
             
             val circle = googleMap?.addCircle(
                 com.google.android.gms.maps.model.CircleOptions()
                     .center(latLng)
                     .radius(150.0)
                     .strokeWidth(2f)
+                    .strokeColor(circleStroke)
+                    .fillColor(circleFill)
+            )
+            circle?.let { detectionCircles.add(it) }
+        }
+        
+        // If the focused coordinates were not in the saved history list, plot them dynamically!
+        if (focusLat != null && focusLng != null && focusLat != 0.0 && focusLng != 0.0 && !foundFocusInHistory) {
+            val latLng = LatLng(focusLat, focusLng)
+            val isWild = focusDangerLevel >= 3
+            val dotIcon = if (isWild) vectorToBitmap(R.drawable.ic_red_dot) else vectorToBitmap(R.drawable.ic_green_dot)
+            val circleStroke = if (isWild) android.graphics.Color.RED else android.graphics.Color.GREEN
+            val circleFill = if (isWild) 0x33FF0000 else 0x3300FF00
+            
+            val dangerText = when (focusDangerLevel) {
+                1 -> "Low"; 2 -> "Moderate"; 3 -> "Medium"; 4 -> "High"; 5 -> "Very High"; else -> "Unknown"
+            }
+            
+            val marker = googleMap?.addMarker(
+                MarkerOptions()
+                    .position(latLng)
+                    .title("Animal Detected: ${focusAnimalType ?: "Unknown"}")
+                    .snippet("Confidence: ${focusConfidence}% | Danger: $dangerText")
+                    .anchor(0.5f, 0.5f)
+                    .icon(dotIcon)
+            )
+            marker?.let {
+                markers.add(it)
+                it.showInfoWindow()
+            }
+            
+            val circle = googleMap?.addCircle(
+                com.google.android.gms.maps.model.CircleOptions()
+                    .center(latLng)
+                    .radius(150.0)
+                    .strokeWidth(2.5f)
                     .strokeColor(circleStroke)
                     .fillColor(circleFill)
             )
@@ -200,7 +251,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             val triggerAnim = args.getBoolean("trigger_monitoring_animation", false)
             
             if (lat != 0.0 && lng != 0.0) {
-                showAllDetectionsOnMap(lat, lng, animalType, dangerLevel)
+                showAllDetectionsOnMap(lat, lng, animalType, dangerLevel, confidence)
             } else {
                 fetchLatestAlert()
                 startPeriodicUpdates()
@@ -313,9 +364,9 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                     
                     val liveDanger = com.example.animalalert.model.DetectionHistory.calculateDangerLevel(alert.animal_type, alert.confidence)
                     val isWild = liveDanger >= 3
-                    val liveDotIcon = if (isWild) vectorToBitmap(R.drawable.ic_red_dot) else vectorToBitmap(R.drawable.ic_blue_dot)
-                    val liveCircleStroke = if (isWild) android.graphics.Color.RED else android.graphics.Color.BLUE
-                    val liveCircleFill = if (isWild) 0x33FF0000 else 0x330000FF
+                    val liveDotIcon = if (isWild) vectorToBitmap(R.drawable.ic_red_dot) else vectorToBitmap(R.drawable.ic_green_dot)
+                    val liveCircleStroke = if (isWild) android.graphics.Color.RED else android.graphics.Color.GREEN
+                    val liveCircleFill = if (isWild) 0x33FF0000 else 0x3300FF00
                     
                     // Add new LIVE marker
                     val marker = googleMap?.addMarker(
@@ -417,8 +468,8 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                     .center(loc)
                     .radius(50.0)
                     .strokeWidth(2.5f)
-                    .strokeColor(android.graphics.Color.parseColor("#00E676"))
-                    .fillColor(android.graphics.Color.parseColor("#1500E676"))
+                    .strokeColor(android.graphics.Color.parseColor("#2196F3"))
+                    .fillColor(android.graphics.Color.parseColor("#1A2196F3"))
             )
             circle?.let { cameraCircles.add(it) }
         }

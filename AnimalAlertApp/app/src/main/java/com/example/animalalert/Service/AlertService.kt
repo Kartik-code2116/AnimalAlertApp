@@ -209,7 +209,8 @@ class AlertService : Service() {
             latitude = latitude,
             longitude = longitude,
             timestamp = normalizedTimestamp,
-            dangerLevel = dangerLevel
+            dangerLevel = dangerLevel,
+            image = alert.image
         )
         
         prefs.addDetectionHistory(detection)

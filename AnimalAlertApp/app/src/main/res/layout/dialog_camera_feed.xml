@@ -1,0 +1,266 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    app:cardCornerRadius="24dp"
+    app:cardElevation="8dp"
+    app:cardBackgroundColor="@color/bg_card">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <!-- Header -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="16dp">
+
+            <View
+                android:layout_width="8dp"
+                android:layout_height="18dp"
+                android:background="@color/accent"
+                android:layout_marginEnd="10dp" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/dialogTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="CCTV Sighting Capture"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/text_primary" />
+
+                <TextView
+                    android:id="@+id/dialogSubtitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Camera: Cam-01  ·  Live Capture"
+                    android:textSize="11sp"
+                    android:textColor="@color/text_muted" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/dialogDangerBadge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="LV 5"
+                android:textSize="10sp"
+                android:textStyle="bold"
+                android:textColor="@color/danger"
+                android:background="@drawable/card_border_danger"
+                android:paddingHorizontal="10dp"
+                android:paddingVertical="5dp"
+                android:gravity="center" />
+        </LinearLayout>
+
+        <!-- Image Container with CCTV Overlay elements -->
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="220dp"
+            android:background="#0A0F1D"
+            android:layout_marginBottom="16dp">
+
+            <!-- The Animal Sighting Image -->
+            <ImageView
+                android:id="@+id/ivAnimalPhoto"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop"
+                android:contentDescription="Animal sighting photo" />
+
+            <!-- CCTV Dark Vignette & Grid Overlay -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="#22000000" />
+
+            <!-- Watermark: CAM ID & LIVE status -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:background="#99000000"
+                android:paddingHorizontal="8dp"
+                android:paddingVertical="4dp"
+                android:layout_margin="10dp"
+                android:layout_gravity="top|start">
+
+                <View
+                    android:id="@+id/viewLivePulse"
+                    android:layout_width="6dp"
+                    android:layout_height="6dp"
+                    android:background="@drawable/ic_circle_green"
+                    android:layout_marginEnd="6dp" />
+
+                <TextView
+                    android:id="@+id/tvCameraWatermark"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="CAM-01 [LIVE]"
+                    android:textColor="#FFFFFF"
+                    android:textStyle="bold"
+                    android:textSize="10sp"
+                    android:letterSpacing="0.05" />
+            </LinearLayout>
+
+            <!-- Watermark: Date Time -->
+            <TextView
+                android:id="@+id/tvTimeWatermark"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="2026-05-18 20:55:12"
+                android:textColor="#FFFFFF"
+                android:background="#99000000"
+                android:paddingHorizontal="8dp"
+                android:paddingVertical="4dp"
+                android:layout_margin="10dp"
+                android:layout_gravity="bottom|end"
+                android:textSize="9sp" />
+
+            <!-- CCTV Target Reticle / Corner brackets (Simulated via simple TextView/View overlay) -->
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:padding="20dp">
+
+                <!-- Target Bounding Box -->
+                <LinearLayout
+                    android:id="@+id/layoutTargetBox"
+                    android:layout_width="140dp"
+                    android:layout_height="120dp"
+                    android:layout_centerInParent="true"
+                    android:background="@drawable/cctv_bounding_box"
+                    android:orientation="vertical"
+                    android:gravity="bottom|start"
+                    android:padding="6dp">
+
+                    <TextView
+                        android:id="@+id/tvTargetName"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="TIGER [98%]"
+                        android:textColor="@color/danger"
+                        android:background="#E6000000"
+                        android:textStyle="bold"
+                        android:textSize="9sp"
+                        android:paddingHorizontal="4dp"
+                        android:paddingVertical="2dp" />
+                </LinearLayout>
+            </RelativeLayout>
+        </FrameLayout>
+
+        <!-- Sighting Metadata Section -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginBottom="20dp">
+
+            <!-- Animal Type & Emoji -->
+            <TextView
+                android:id="@+id/tvDialogAnimalName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="🐯 Tiger Detected"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:textColor="@color/text_primary"
+                android:layout_marginBottom="4dp" />
+
+            <!-- Sighting GPS Coordinates -->
+            <TextView
+                android:id="@+id/tvDialogCoords"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="📍 Coordinates: 18.5204, 73.8567"
+                android:textSize="13sp"
+                android:textColor="@color/text_secondary"
+                android:layout_marginBottom="8dp" />
+
+            <!-- Confidence Bar -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginTop="4dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Model Confidence:"
+                    android:textSize="12sp"
+                    android:textColor="@color/text_muted"
+                    android:layout_marginEnd="8dp" />
+
+                <ProgressBar
+                    android:id="@+id/dialogConfidenceProgress"
+                    android:layout_width="0dp"
+                    android:layout_height="6dp"
+                    android:layout_weight="1"
+                    style="?android:attr/progressBarStyleHorizontal"
+                    android:progressDrawable="@null"
+                    android:progress="98"
+                    android:max="100"
+                    android:layout_marginEnd="10dp" />
+
+                <TextView
+                    android:id="@+id/tvDialogConfidence"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="98%"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/text_primary" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Actions -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnDialogClose"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Close Feed"
+                android:textColor="@color/text_primary"
+                android:backgroundTint="@color/bg_card3"
+                app:cornerRadius="12dp"
+                style="@style/Widget.MaterialComponents.Button"
+                android:layout_marginEnd="6dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnDialogMap"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1.2"
+                android:text="Locate Sighting"
+                android:textColor="@color/white"
+                android:backgroundTint="@color/accent"
+                app:icon="@drawable/ic_map"
+                app:iconGravity="textStart"
+                app:iconTint="@color/white"
+                app:cornerRadius="12dp"
+                style="@style/Widget.MaterialComponents.Button"
+                android:layout_marginStart="6dp" />
+        </LinearLayout>
+
+    </LinearLayout>
+</androidx.cardview.widget.CardView>

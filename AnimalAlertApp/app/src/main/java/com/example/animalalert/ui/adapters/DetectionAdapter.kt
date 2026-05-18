@@ -13,7 +13,8 @@ import java.util.*
 class DetectionAdapter(
     private var detections: List<DetectionHistory>,
     private val onItemClick: (DetectionHistory) -> Unit,
-    private val onDeleteClick: (DetectionHistory) -> Unit = {}
+    private val onDeleteClick: (DetectionHistory) -> Unit = {},
+    private val onIconClick: (DetectionHistory) -> Unit = {}
 ) : RecyclerView.Adapter<DetectionAdapter.DetectionViewHolder>() {
 
     fun updateData(newDetections: List<DetectionHistory>) {
@@ -48,6 +49,7 @@ class DetectionAdapter(
 
     inner class DetectionViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val cardView: View = itemView.findViewById(R.id.cardDetection)
+        private val detIconContainer: View = itemView.findViewById(R.id.detIconContainer)
         private val tvDetIcon: TextView = itemView.findViewById(R.id.tvDetIcon)
         private val tvAnimalType: TextView = itemView.findViewById(R.id.tvAnimalType)
         private val tvConfidence: TextView = itemView.findViewById(R.id.tvConfidence)
@@ -86,6 +88,10 @@ class DetectionAdapter(
             
             itemView.setOnClickListener {
                 onItemClick(detection)
+            }
+            
+            detIconContainer.setOnClickListener {
+                onIconClick(detection)
             }
             
             btnDelete?.setOnClickListener {

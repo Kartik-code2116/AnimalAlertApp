@@ -28,7 +28,8 @@ The backend server must implement the following REST API endpoints under the con
       "animal_type": "Bear",
       "confidence": 94.2,
       "location": "37.4220,-122.0841",
-      "timestamp": 1716035240
+      "timestamp": 1716035240,
+      "image": "/9j/4AAQSkZJRgABAQEASABIAAD..."
     }
     ```
 *   **Field Semantics**:
@@ -37,6 +38,8 @@ The backend server must implement the following REST API endpoints under the con
     *   `confidence` (`Float`): Confidence score of the ML inference model (range: `0.0` to `100.0`).
     *   `location` (`String?`): Sighting GPS coordinates formatted as a single string: `"latitude,longitude"`.
     *   `timestamp` (`Long`): Sighting event timestamp (supports standard Unix seconds or milliseconds).
+    *   `image` (`String?`): Base64-encoded string of the captured frame containing the animal.
+
 
 ---
 

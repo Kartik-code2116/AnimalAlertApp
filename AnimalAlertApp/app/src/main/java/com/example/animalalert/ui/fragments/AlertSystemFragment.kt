@@ -94,11 +94,128 @@ class AlertSystemFragment : Fragment() {
                 preferenceManager.removeDetectionHistory(detection.id)
                 loadRecentDetections()
                 Toast.makeText(requireContext(), "Detection deleted", Toast.LENGTH_SHORT).show()
+            },
+            onIconClick = { detection ->
+                showCameraFeedDialog(detection)
             }
         )
         
         binding.recyclerViewDetections.layoutManager = LinearLayoutManager(requireContext())
         binding.recyclerViewDetections.adapter = detectionAdapter
+    }
+    
+    private fun showCameraFeedDialog(detection: DetectionHistory) {
+        val context = requireContext()
+        val dialogView = layoutInflater.inflate(R.layout.dialog_camera_feed, null)
+        
+        val dialog = androidx.appcompat.app.AlertDialog.Builder(context)
+            .setView(dialogView)
+            .create()
+            
+        // Make background transparent for rounded corners
+        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+        
+        // Find views
+        val ivAnimalPhoto = dialogView.findViewById<android.widget.ImageView>(R.id.ivAnimalPhoto)
+        val tvCameraWatermark = dialogView.findViewById<android.widget.TextView>(R.id.tvCameraWatermark)
+        val tvTimeWatermark = dialogView.findViewById<android.widget.TextView>(R.id.tvTimeWatermark)
+        val tvTargetName = dialogView.findViewById<android.widget.TextView>(R.id.tvTargetName)
+        val tvDialogAnimalName = dialogView.findViewById<android.widget.TextView>(R.id.tvDialogAnimalName)
+        val tvDialogCoords = dialogView.findViewById<android.widget.TextView>(R.id.tvDialogCoords)
+        val tvDialogConfidence = dialogView.findViewById<android.widget.TextView>(R.id.tvDialogConfidence)
+        val dialogConfidenceProgress = dialogView.findViewById<android.widget.ProgressBar>(R.id.dialogConfidenceProgress)
+        val dialogDangerBadge = dialogView.findViewById<android.widget.TextView>(R.id.dialogDangerBadge)
+        val dialogSubtitle = dialogView.findViewById<android.widget.TextView>(R.id.dialogSubtitle)
+        val btnDialogClose = dialogView.findViewById<com.google.android.material.button.MaterialButton>(R.id.btnDialogClose)
+        val btnDialogMap = dialogView.findViewById<com.google.android.material.button.MaterialButton>(R.id.btnDialogMap)
+        val viewLivePulse = dialogView.findViewById<android.view.View>(R.id.viewLivePulse)
+        val layoutTargetBox = dialogView.findViewById<android.view.View>(R.id.layoutTargetBox)
+
+        // Set metadata
+        val animalName = detection.animalType ?: "Unknown"
+        tvDialogAnimalName.text = "${iconForAnimal(animalName)} $animalName Detected"
+        tvTargetName.text = "${animalName.uppercase(java.util.Locale.getDefault())} [${detection.confidence.toInt()}%]"
+        
+        val lat = detection.latitude
+        val lng = detection.longitude
+        if (lat != null && lng != null && lat != 0.0 && lng != 0.0) {
+            val camName = cameraPlaceholder(detection.id)
+            tvDialogCoords.text = "📍 Coordinates: %.4f, %.4f (%s)".format(lat, lng, camName)
+        } else {
+            tvDialogCoords.text = "📍 Location: ${detection.location ?: "N/A"}"
+        }
+        
+        val camName = cameraPlaceholder(detection.id)
+        dialogSubtitle.text = "Camera: $camName  ·  Live Capture"
+        tvCameraWatermark.text = "$camName [LIVE]"
+        
+        val sdf = java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss", java.util.Locale.getDefault())
+        tvTimeWatermark.text = sdf.format(java.util.Date(detection.timestamp))
+        
+        tvDialogConfidence.text = "${detection.confidence.toInt()}%"
+        dialogConfidenceProgress.progress = detection.confidence.toInt()
+        
+        // Progress Tint based on confidence / danger
+        val dangerColor = detection.getDangerColor()
+        dialogConfidenceProgress.progressTintList = android.content.res.ColorStateList.valueOf(dangerColor)
+        
+        dialogDangerBadge.text = "LV ${detection.dangerLevel}"
+        dialogDangerBadge.setTextColor(dangerColor)
+        dialogDangerBadge.setBackgroundColor((dangerColor and 0x00FFFFFF) or 0x22000000)
+
+        // Bounding box setup - set target box boundary stroke color programmatically
+        val boxDrawable = layoutTargetBox.background as? android.graphics.drawable.GradientDrawable
+        boxDrawable?.mutate()
+        boxDrawable?.setStroke((2 * resources.displayMetrics.density).toInt(), dangerColor)
+        boxDrawable?.setColor(android.graphics.Color.TRANSPARENT)
+        tvTargetName.setTextColor(dangerColor)
+
+        // Live pulse dot blinking animation
+        val blinkAnim = android.view.animation.AlphaAnimation(0.2f, 1.0f).apply {
+            duration = 600
+            repeatMode = android.view.animation.Animation.REVERSE
+            repeatCount = android.view.animation.Animation.INFINITE
+        }
+        viewLivePulse.startAnimation(blinkAnim)
+
+        // Load the image!
+        if (!detection.image.isNullOrEmpty()) {
+            val bitmap = decodeBase64ToBitmap(detection.image)
+            if (bitmap != null) {
+                ivAnimalPhoto.setImageBitmap(bitmap)
+            } else {
+                // Decode failed, load animal placeholder
+                ivAnimalPhoto.setImageResource(R.drawable.wildtrack5_o)
+            }
+        } else {
+            // Load animal placeholder
+            ivAnimalPhoto.setImageResource(R.drawable.wildtrack5_o)
+        }
+
+        btnDialogClose.setOnClickListener {
+            dialog.dismiss()
+        }
+
+        btnDialogMap.setOnClickListener {
+            dialog.dismiss()
+            navigateToMapWithDetection(detection)
+        }
+
+        dialog.show()
+    }
+
+    private fun decodeBase64ToBitmap(base64Str: String): android.graphics.Bitmap? {
+        return try {
+            val decodedBytes = android.util.Base64.decode(base64Str, android.util.Base64.DEFAULT)
+            android.graphics.BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.size)
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    private fun cameraPlaceholder(detectionId: String): String {
+        val cam = (kotlin.math.abs(detectionId.hashCode()) % 3) + 1
+        return "Cam-%02d".format(cam)
     }
     
     private fun navigateToMapWithDetection(detection: DetectionHistory) {
@@ -174,6 +291,19 @@ class AlertSystemFragment : Fragment() {
             b.tvStatus.text = "⚠ LIVE THREAT"
             b.tvAnimalType.text = "${iconForAnimal(alert.animal_type)} ${alert.animal_type ?: "Unknown"}"
             b.tvConfidence.text = "Confidence: ${alert.confidence}% · LV $dangerLevel"
+            
+            // Set dynamic live camera preview image
+            if (!alert.image.isNullOrEmpty()) {
+                val bitmap = decodeBase64ToBitmap(alert.image)
+                if (bitmap != null) {
+                    b.ivLiveAlertPhoto.setImageBitmap(bitmap)
+                    b.cardLiveImageContainer.visibility = View.VISIBLE
+                } else {
+                    b.cardLiveImageContainer.visibility = View.GONE
+                }
+            } else {
+                b.cardLiveImageContainer.visibility = View.GONE
+            }
             
             // Geocode location if possible
             var displayLocation = alert.location ?: "N/A"

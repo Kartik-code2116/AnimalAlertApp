@@ -76,22 +76,10 @@ class MainActivity : AppCompatActivity() {
         }
 
         setupBottomNavigation()
-
+ 
         // Check if we need to show a specific detection on map
         val showDetection = intent.getBooleanExtra("show_detection", false)
         if (showDetection) {
-            // Navigate to MapFragment with detection data
-            val mapFragment = MapFragment().apply {
-                arguments = Bundle().apply {
-                    putDouble("detection_lat", intent.getDoubleExtra("detection_lat", 0.0))
-                    putDouble("detection_lng", intent.getDoubleExtra("detection_lng", 0.0))
-                    putString("detection_location", intent.getStringExtra("detection_location"))
-                    putString("detection_animal_type", intent.getStringExtra("detection_animal_type"))
-                    putFloat("detection_confidence", intent.getFloatExtra("detection_confidence", 0f))
-                    putInt("detection_danger", intent.getIntExtra("detection_danger", 1))
-                }
-            }
-            loadFragment(mapFragment)
             binding.bottomNavigation.selectedItemId = R.id.nav_map
         } else {
             loadFragment(DashboardFragment())
@@ -132,8 +120,20 @@ class MainActivity : AppCompatActivity() {
                     true
                 }
                 R.id.nav_map -> {
+                    val showDetection = intent.getBooleanExtra("show_detection", false)
                     val mapFragment = MapFragment().apply {
-                        if (triggerMapAnimation) {
+                        if (showDetection) {
+                            arguments = Bundle().apply {
+                                putDouble("detection_lat", intent.getDoubleExtra("detection_lat", 0.0))
+                                putDouble("detection_lng", intent.getDoubleExtra("detection_lng", 0.0))
+                                putString("detection_location", intent.getStringExtra("detection_location"))
+                                putString("detection_animal_type", intent.getStringExtra("detection_animal_type"))
+                                putFloat("detection_confidence", intent.getFloatExtra("detection_confidence", 0f))
+                                putInt("detection_danger", intent.getIntExtra("detection_danger", 1))
+                            }
+                            // Clear the flag to prevent duplicate centering on manual tab clicks
+                            intent.putExtra("show_detection", false)
+                        } else if (triggerMapAnimation) {
                             arguments = Bundle().apply {
                                 putBoolean("trigger_monitoring_animation", true)
                             }
@@ -169,18 +169,6 @@ class MainActivity : AppCompatActivity() {
         intent?.let {
             val showDetection = it.getBooleanExtra("show_detection", false)
             if (showDetection) {
-                // Navigate to MapFragment with detection data
-                val mapFragment = MapFragment().apply {
-                    arguments = Bundle().apply {
-                        putDouble("detection_lat", it.getDoubleExtra("detection_lat", 0.0))
-                        putDouble("detection_lng", it.getDoubleExtra("detection_lng", 0.0))
-                        putString("detection_location", it.getStringExtra("detection_location"))
-                        putString("detection_animal_type", it.getStringExtra("detection_animal_type"))
-                        putFloat("detection_confidence", it.getFloatExtra("detection_confidence", 0f))
-                        putInt("detection_danger", it.getIntExtra("detection_danger", 1))
-                    }
-                }
-                loadFragment(mapFragment)
                 binding.bottomNavigation.selectedItemId = R.id.nav_map
             }
         }

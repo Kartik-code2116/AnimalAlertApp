@@ -131,6 +131,38 @@
                     android:orientation="vertical"
                     android:padding="16dp">
 
+                    <!-- Dynamic live camera preview -->
+                    <androidx.cardview.widget.CardView
+                        android:id="@+id/cardLiveImageContainer"
+                        android:layout_width="match_parent"
+                        android:layout_height="140dp"
+                        android:layout_marginBottom="12dp"
+                        app:cardCornerRadius="8dp"
+                        app:cardElevation="0dp"
+                        app:cardBackgroundColor="#000000"
+                        android:visibility="gone">
+                        
+                        <ImageView
+                            android:id="@+id/ivLiveAlertPhoto"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:scaleType="centerCrop"
+                            android:contentDescription="Live Sighting Photo" />
+                            
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="📷 LIVE CAMERA CAPTURE"
+                            android:textColor="#FFFFFF"
+                            android:textSize="8sp"
+                            android:textStyle="bold"
+                            android:background="#88000000"
+                            android:paddingHorizontal="6dp"
+                            android:paddingVertical="3dp"
+                            android:layout_gravity="top|start"
+                            android:layout_margin="8dp" />
+                    </androidx.cardview.widget.CardView>
+
                     <TextView
                         android:id="@+id/tvAnimalType"
                         android:layout_width="match_parent"
