@@ -50,6 +50,12 @@ class DashboardFragment : Fragment() {
     }
 
     private fun setupViews() {
+        binding.swipeRefreshLayout.setColorSchemeResources(R.color.accent)
+        binding.swipeRefreshLayout.setProgressBackgroundColorSchemeResource(R.color.bg_card2)
+        binding.swipeRefreshLayout.setOnRefreshListener {
+            refreshData()
+        }
+
         detectionAdapter = com.example.animalalert.ui.adapters.DetectionAdapter(
             detections = emptyList(),
             onItemClick = { detection ->
@@ -180,6 +186,7 @@ class DashboardFragment : Fragment() {
                 b.cardActiveAlert.visibility = View.GONE
                 updateStats(activeCount = 0)
             }
+            b.swipeRefreshLayout.isRefreshing = false
         }
     }
 
