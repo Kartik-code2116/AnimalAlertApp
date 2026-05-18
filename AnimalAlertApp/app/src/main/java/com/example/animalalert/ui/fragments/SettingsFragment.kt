@@ -45,9 +45,7 @@ class SettingsFragment : Fragment() {
         isLoading = true
 
         // Appearance
-        binding.switchSystemTheme.isChecked = prefs.isFollowSystemTheme()
         binding.switchDarkMode.isChecked = prefs.isDarkMode()
-        binding.switchDarkMode.isEnabled = !prefs.isFollowSystemTheme()
 
         // Notifications
         binding.switchPushNotifications.isChecked = prefs.isNotificationEnabled()
@@ -91,16 +89,10 @@ class SettingsFragment : Fragment() {
 
         // ── Appearance ───────────────────────────────────────────────────────
 
-        binding.switchSystemTheme.setOnCheckedChangeListener { _, checked ->
-            if (isLoading) return@setOnCheckedChangeListener
-            prefs.setFollowSystemTheme(checked)
-            binding.switchDarkMode.isEnabled = !checked
-            applyTheme()
-        }
-
         binding.switchDarkMode.setOnCheckedChangeListener { _, checked ->
             if (isLoading) return@setOnCheckedChangeListener
             prefs.setDarkMode(checked)
+            prefs.setFollowSystemTheme(false)
             applyTheme()
         }
 

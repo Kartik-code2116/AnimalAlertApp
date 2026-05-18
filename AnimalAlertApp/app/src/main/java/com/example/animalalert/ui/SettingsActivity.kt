@@ -42,9 +42,9 @@ class SettingsActivity : AppCompatActivity() {
     }
 
     private fun loadSettings() {
-        // Dark Mode
+        // Dark Mode - Remove listener temporarily to prevent programmatic trigger cycles
+        binding.switchDarkMode.setOnCheckedChangeListener(null)
         binding.switchDarkMode.isChecked = preferenceManager.isDarkMode()
-        binding.switchFollowSystem.isChecked = preferenceManager.isFollowSystemTheme()
 
         // Server URL
         val savedUrl = preferenceManager.getServerUrl()
@@ -80,20 +80,23 @@ class SettingsActivity : AppCompatActivity() {
         } catch (e: Exception) {
             binding.tvVersion.text = "Version 1.0.0"
         }
+
+        // Restore theme listeners after loading completed
+        setupThemeListeners()
     }
 
-    private fun setupListeners() {
-        // Dark Mode
+    private fun setupThemeListeners() {
         binding.switchDarkMode.setOnCheckedChangeListener { _, isChecked ->
             preferenceManager.setDarkMode(isChecked)
+            preferenceManager.setFollowSystemTheme(false)
             applyTheme()
             Toast.makeText(this, if (isChecked) "Dark mode enabled" else "Light mode enabled", Toast.LENGTH_SHORT).show()
         }
+    }
 
-        binding.switchFollowSystem.setOnCheckedChangeListener { _, isChecked ->
-            preferenceManager.setFollowSystemTheme(isChecked)
-            applyTheme()
-        }
+    private fun setupListeners() {
+        // Theme listeners are now managed dynamically inside setupThemeListeners()
+        setupThemeListeners()
 
         // Server URL
         binding.btnTestConnection.setOnClickListener {

@@ -99,7 +99,7 @@
                     android:text="Edit Profile"
                     android:textSize="13sp"
                     android:textColor="@color/text_primary"
-                    android:backgroundTint="#242B38"
+                    android:backgroundTint="@color/bg_card3"
                     app:cornerRadius="22dp"
                     style="@style/Widget.MaterialComponents.Button" />
 
@@ -114,7 +114,7 @@
                     android:text="Settings"
                     android:textSize="13sp"
                     android:textColor="@color/text_primary"
-                    android:backgroundTint="#242B38"
+                    android:backgroundTint="@color/bg_card3"
                     app:cornerRadius="22dp"
                     style="@style/Widget.MaterialComponents.Button" />
             </LinearLayout>
@@ -252,7 +252,7 @@
                 android:orientation="horizontal"
                 android:weightSum="2"
                 android:layout_marginBottom="18dp">
-    
+
                 <androidx.cardview.widget.CardView
                     android:layout_width="0dp"
                     android:layout_height="90dp"
@@ -336,7 +336,7 @@
                 android:textSize="15sp"
                 android:textStyle="bold"
                 android:textColor="@color/danger"
-                android:backgroundTint="#1A0808"
+                android:backgroundTint="@color/danger_bg"
                 app:cornerRadius="12dp"
                 app:strokeColor="@color/border_danger"
                 app:strokeWidth="1dp"
