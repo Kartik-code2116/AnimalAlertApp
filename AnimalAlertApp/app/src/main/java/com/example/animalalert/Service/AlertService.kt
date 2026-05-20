@@ -88,7 +88,7 @@ class AlertService : Service() {
                             if (alert != null) {
                                 Log.d("AlertService", "Alert fetched: $alert")
 
-                                if (alert.animal_detected && !userStopped) {
+                                if (alert.animal_detected && !userStopped && DetectionHistory.isWildAnimal(alert.animal_type)) {
                                     playSiren()
                                     // Update statistics
                                     val prefs = PreferenceManager(this@AlertService)
@@ -104,7 +104,7 @@ class AlertService : Service() {
                                     
                                     // Send notifications
                                     sendNotifications(alert, prefs)
-                                } else if (!alert.animal_detected) {
+                                } else if (!alert.animal_detected || !DetectionHistory.isWildAnimal(alert.animal_type)) {
                                     stopSiren()
                                     userStopped = false
                                 }

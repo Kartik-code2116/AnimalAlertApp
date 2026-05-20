@@ -286,7 +286,7 @@ class AlertSystemFragment : Fragment() {
 
     private fun updateUI(alert: AlertResponse) {
         val b = _binding ?: return
-        if (alert.animal_detected) {
+        if (alert.animal_detected && DetectionHistory.isWildAnimal(alert.animal_type)) {
             val dangerLevel = DetectionHistory.calculateDangerLevel(alert.animal_type, alert.confidence)
             b.tvStatus.text = "⚠ LIVE THREAT"
             b.tvAnimalType.text = "${iconForAnimal(alert.animal_type)} ${alert.animal_type ?: "Unknown"}"

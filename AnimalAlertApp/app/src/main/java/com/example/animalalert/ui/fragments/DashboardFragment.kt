@@ -170,7 +170,7 @@ class DashboardFragment : Fragment() {
             }
 
             val b = _binding ?: return@launch
-            if (alert?.animal_detected == true) {
+            if (alert?.animal_detected == true && DetectionHistory.isWildAnimal(alert.animal_type)) {
                 currentActiveCount = 1
                 val dangerLevel = DetectionHistory.calculateDangerLevel(alert.animal_type, alert.confidence)
 

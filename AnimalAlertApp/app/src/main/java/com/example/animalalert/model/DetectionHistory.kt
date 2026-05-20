@@ -71,6 +71,42 @@ data class DetectionHistory(
             // Low Danger (1) - default
             return 1
         }
+
+        fun isWildAnimal(animalType: String?): Boolean {
+            val type = animalType?.lowercase() ?: ""
+            if (type.isEmpty()) return false
+            
+            // Exclude humans, domestic animals, and non-animal objects
+            val excludedClasses = setOf(
+                "person", "human", "cat", "dog", "cow", "horse", "sheep", "chicken", "pig", 
+                "backpack", "umbrella", "handbag", "tie", "suitcase", "bicycle", "car", "motorcycle", 
+                "airplane", "bus", "train", "truck", "boat", "traffic light", "fire hydrant", "stop sign", 
+                "parking meter", "bench"
+            )
+            
+            for (excluded in excludedClasses) {
+                if (type.contains(excluded)) {
+                    return false
+                }
+            }
+            
+            // Explicit wild animals list
+            val wildAnimals = setOf(
+                "bear", "wolf", "lion", "tiger", "leopard", "crocodile", "alligator", "snake", 
+                "boar", "wild boar", "moose", "elk", "bison", "deer", "fox", "coyote", "raccoon", 
+                "skunk", "elephant", "zebra", "giraffe", "panther", "cheetah", "hyena", "monkey", 
+                "gorilla", "chimpanzee", "hippo", "hippopotamus", "rhino", "rhinoceros", "kangaroo", 
+                "koala", "panda", "badger", "opossum", "wolverine", "lynx", "bobcat", "cougar", "jaguar"
+            )
+            
+            for (wild in wildAnimals) {
+                if (type.contains(wild)) {
+                    return true
+                }
+            }
+            
+            return false
+        }
     }
 }
 
