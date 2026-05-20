@@ -61,8 +61,8 @@ class DashboardFragment : Fragment() {
             onItemClick = { detection ->
                 val intent = android.content.Intent(requireContext(), com.example.animalalert.ui.MainActivity::class.java).apply {
                     putExtra("show_detection", true)
-                    putExtra("detection_lat", detection.latitude)
-                    putExtra("detection_lng", detection.longitude)
+                    putExtra("detection_lat", detection.latitude ?: 0.0)
+                    putExtra("detection_lng", detection.longitude ?: 0.0)
                     putExtra("detection_location", detection.location)
                     putExtra("detection_animal_type", detection.animalType)
                     putExtra("detection_confidence", detection.confidence)

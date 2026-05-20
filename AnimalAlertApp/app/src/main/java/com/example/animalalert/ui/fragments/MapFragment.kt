@@ -104,6 +104,22 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         return false
     }
     
+    data class DangerColorConfig(
+        val drawableId: Int,
+        val strokeColor: Int,
+        val fillColor: Int
+    )
+
+    private fun getColorConfigForDangerLevel(dangerLevel: Int): DangerColorConfig {
+        return when (dangerLevel) {
+            5 -> DangerColorConfig(R.drawable.ic_red_dot, android.graphics.Color.RED, 0x33FF0000)
+            4 -> DangerColorConfig(R.drawable.ic_orange_dot, android.graphics.Color.parseColor("#FF9800"), 0x33FF9800)
+            3 -> DangerColorConfig(R.drawable.ic_yellow_dot, android.graphics.Color.parseColor("#FFEB3B"), 0x33FFEB3B)
+            2 -> DangerColorConfig(R.drawable.ic_blue_dot, android.graphics.Color.parseColor("#2196F3"), 0x332196F3)
+            else -> DangerColorConfig(R.drawable.ic_green_dot, android.graphics.Color.GREEN, 0x3300FF00)
+        }
+    }
+
     private fun showAllDetectionsOnMap(
         focusLat: Double? = null,
         focusLng: Double? = null,
@@ -126,10 +142,11 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             val lng = detection.longitude ?: continue
             val latLng = LatLng(lat, lng)
             val dangerText = detection.getDangerLevelText()
-            val isWild = detection.dangerLevel >= 3
-            val dotIcon = if (isWild) vectorToBitmap(R.drawable.ic_red_dot) else vectorToBitmap(R.drawable.ic_green_dot)
-            val circleStroke = if (isWild) android.graphics.Color.RED else android.graphics.Color.GREEN
-            val circleFill = if (isWild) 0x33FF0000 else 0x3300FF00
+            
+            val colorConfig = getColorConfigForDangerLevel(detection.dangerLevel)
+            val dotIcon = vectorToBitmap(colorConfig.drawableId)
+            val circleStroke = colorConfig.strokeColor
+            val circleFill = colorConfig.fillColor
             
             val isFocusMatch = focusLat != null && focusLng != null && 
                     kotlin.math.abs(lat - focusLat) < 0.0001 && 
@@ -168,10 +185,10 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         // If the focused coordinates were not in the saved history list, plot them dynamically!
         if (focusLat != null && focusLng != null && focusLat != 0.0 && focusLng != 0.0 && !foundFocusInHistory) {
             val latLng = LatLng(focusLat, focusLng)
-            val isWild = focusDangerLevel >= 3
-            val dotIcon = if (isWild) vectorToBitmap(R.drawable.ic_red_dot) else vectorToBitmap(R.drawable.ic_green_dot)
-            val circleStroke = if (isWild) android.graphics.Color.RED else android.graphics.Color.GREEN
-            val circleFill = if (isWild) 0x33FF0000 else 0x3300FF00
+            val colorConfig = getColorConfigForDangerLevel(focusDangerLevel)
+            val dotIcon = vectorToBitmap(colorConfig.drawableId)
+            val circleStroke = colorConfig.strokeColor
+            val circleFill = colorConfig.fillColor
             
             val dangerText = when (focusDangerLevel) {
                 1 -> "Low"; 2 -> "Moderate"; 3 -> "Medium"; 4 -> "High"; 5 -> "Very High"; else -> "Unknown"
@@ -363,10 +380,10 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                     showAllDetectionsOnMap()
                     
                     val liveDanger = com.example.animalalert.model.DetectionHistory.calculateDangerLevel(alert.animal_type, alert.confidence)
-                    val isWild = liveDanger >= 3
-                    val liveDotIcon = if (isWild) vectorToBitmap(R.drawable.ic_red_dot) else vectorToBitmap(R.drawable.ic_green_dot)
-                    val liveCircleStroke = if (isWild) android.graphics.Color.RED else android.graphics.Color.GREEN
-                    val liveCircleFill = if (isWild) 0x33FF0000 else 0x3300FF00
+                    val colorConfig = getColorConfigForDangerLevel(liveDanger)
+                    val liveDotIcon = vectorToBitmap(colorConfig.drawableId)
+                    val liveCircleStroke = colorConfig.strokeColor
+                    val liveCircleFill = colorConfig.fillColor
                     
                     // Add new LIVE marker
                     val marker = googleMap?.addMarker(

@@ -124,8 +124,16 @@ class MainActivity : AppCompatActivity() {
                     val mapFragment = MapFragment().apply {
                         if (showDetection) {
                             arguments = Bundle().apply {
-                                putDouble("detection_lat", intent.getDoubleExtra("detection_lat", 0.0))
-                                putDouble("detection_lng", intent.getDoubleExtra("detection_lng", 0.0))
+                                val latVal = if (intent.hasExtra("detection_lat")) {
+                                    val extra = intent.getSerializableExtra("detection_lat")
+                                    if (extra is Double) extra else intent.getDoubleExtra("detection_lat", 0.0)
+                                } else 0.0
+                                val lngVal = if (intent.hasExtra("detection_lng")) {
+                                    val extra = intent.getSerializableExtra("detection_lng")
+                                    if (extra is Double) extra else intent.getDoubleExtra("detection_lng", 0.0)
+                                } else 0.0
+                                putDouble("detection_lat", latVal)
+                                putDouble("detection_lng", lngVal)
                                 putString("detection_location", intent.getStringExtra("detection_location"))
                                 putString("detection_animal_type", intent.getStringExtra("detection_animal_type"))
                                 putFloat("detection_confidence", intent.getFloatExtra("detection_confidence", 0f))
@@ -169,7 +177,30 @@ class MainActivity : AppCompatActivity() {
         intent?.let {
             val showDetection = it.getBooleanExtra("show_detection", false)
             if (showDetection) {
-                binding.bottomNavigation.selectedItemId = R.id.nav_map
+                if (binding.bottomNavigation.selectedItemId == R.id.nav_map) {
+                    val mapFragment = MapFragment().apply {
+                        arguments = Bundle().apply {
+                            val latVal = if (intent.hasExtra("detection_lat")) {
+                                val extra = intent.getSerializableExtra("detection_lat")
+                                if (extra is Double) extra else intent.getDoubleExtra("detection_lat", 0.0)
+                            } else 0.0
+                            val lngVal = if (intent.hasExtra("detection_lng")) {
+                                val extra = intent.getSerializableExtra("detection_lng")
+                                if (extra is Double) extra else intent.getDoubleExtra("detection_lng", 0.0)
+                            } else 0.0
+                            putDouble("detection_lat", latVal)
+                            putDouble("detection_lng", lngVal)
+                            putString("detection_location", intent.getStringExtra("detection_location"))
+                            putString("detection_animal_type", intent.getStringExtra("detection_animal_type"))
+                            putFloat("detection_confidence", intent.getFloatExtra("detection_confidence", 0f))
+                            putInt("detection_danger", intent.getIntExtra("detection_danger", 1))
+                        }
+                    }
+                    intent.putExtra("show_detection", false)
+                    loadFragment(mapFragment)
+                } else {
+                    binding.bottomNavigation.selectedItemId = R.id.nav_map
+                }
             }
         }
     }
