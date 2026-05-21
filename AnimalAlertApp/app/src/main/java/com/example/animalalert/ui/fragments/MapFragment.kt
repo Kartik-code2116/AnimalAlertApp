@@ -14,7 +14,10 @@ import androidx.fragment.app.Fragment
 import com.example.animalalert.R
 import com.example.animalalert.databinding.FragmentMapBinding
 import com.example.animalalert.model.AlertResponse
+import com.example.animalalert.model.CameraInfo
 import com.example.animalalert.network.RetrofitClient
+import com.example.animalalert.utils.MapPinHelper
+import com.example.animalalert.utils.ServerSyncManager
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -43,15 +46,22 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     private val job = SupervisorJob()
     private val scope = CoroutineScope(Dispatchers.Main + job)
 
-    private val cameras = listOf(
-        LatLng(37.4220, -122.0841), // Camera 1: North Perimeter
-        LatLng(37.4250, -122.0880), // Camera 2: East Ridge
-        LatLng(37.4190, -122.0800)  // Camera 3: South Gate
-    )
+    private val cameraData = mutableListOf<CameraInfo>()
     private val cameraMarkers = mutableListOf<Marker>()
     private val cameraCircles = mutableListOf<com.google.android.gms.maps.model.Circle>()
     private val detectionCircles = mutableListOf<com.google.android.gms.maps.model.Circle>()
     private var scanJob: Job? = null
+    private var cameraSyncJob: Job? = null
+
+    companion object {
+        private const val LOCATION_PERMISSION_REQUEST_CODE = 1001
+        // Pune fallback when server is unreachable (matches production server defaults)
+        private val FALLBACK_CAMERA_LOCATIONS = listOf(
+            LatLng(18.5204, 73.8567),
+            LatLng(18.5210, 73.8570),
+            LatLng(18.5198, 73.8560)
+        )
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -70,10 +80,12 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment?
         mapFragment?.getMapAsync(this)
         
-        binding.btnRefresh.setOnClickListener {
-            fetchLatestAlert()
+        binding.mapSwipeRefresh.setColorSchemeResources(R.color.accent)
+        binding.mapSwipeRefresh.setProgressBackgroundColorSchemeResource(R.color.bg_card2)
+        binding.mapSwipeRefresh.setOnRefreshListener {
+            performMapRefresh(showAnimation = true)
         }
-        
+
         binding.btnMyLocation.setOnClickListener {
             getCurrentLocation()
         }
@@ -225,12 +237,12 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             val dangerText = when (focusDangerLevel) {
                 1 -> "Low"; 2 -> "Moderate"; 3 -> "Medium"; 4 -> "High"; 5 -> "Very High"; else -> "Unknown"
             }
-            binding.tvStatus.text = "📍 Focused on: ${focusAnimalType ?: "Unknown"} (Danger: $dangerText)"
+            binding.tvMapSubtitle.text = "📍 Focused on: ${focusAnimalType ?: "Unknown"} (Danger: $dangerText)"
         } else if (historyList.isNotEmpty()) {
             val first = historyList.first()
             if (first.latitude != null && first.longitude != null) {
                 googleMap?.animateCamera(CameraUpdateFactory.newLatLngZoom(LatLng(first.latitude, first.longitude), 12f))
-                binding.tvStatus.text = "📍 Showing All Recent Detections"
+                binding.tvMapSubtitle.text = "📍 Showing All Recent Detections"
             }
         }
     }
@@ -254,8 +266,9 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         map.uiSettings.isMyLocationButtonEnabled = false
         map.uiSettings.isCompassEnabled = true
         
-        // Plot and initialize all standard surveillance cameras!
-        plotCameras()
+        ServerSyncManager.configureRetrofit(ctx)
+        performMapRefresh(showAnimation = true)
+        startCameraSync()
 
         // Check if we need to show a specific detection first
         arguments?.let { args ->
@@ -275,8 +288,8 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             }
 
             if (triggerAnim) {
-                // Focus on Camera 1 (North Perimeter) and show scanning alert!
-                val focusCam = LatLng(37.4220, -122.0841)
+                val focusCam = getCameraPositions().firstOrNull()?.first
+                    ?: FALLBACK_CAMERA_LOCATIONS.first()
                 googleMap?.animateCamera(CameraUpdateFactory.newLatLngZoom(focusCam, 16f))
                 Toast.makeText(ctx, "Surveillance sensors activated and scanning...", Toast.LENGTH_LONG).show()
             }
@@ -351,7 +364,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                 if (e !is CancellationException) {
                     android.util.Log.e("MapFragment", "Failed to fetch alert: ${e.message}")
                     if (_binding != null) {
-                        binding.tvStatus.text = "Offline Mode · Monitoring Active"
+                        binding.tvMapSubtitle.text = "Offline Mode · Monitoring Active"
                     }
                 }
             }
@@ -361,69 +374,59 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     private fun displayAlertOnMap(alert: AlertResponse) {
         val ctx = context ?: return
         if (_binding == null) return
-        if (alert.animal_detected && alert.location != null) {
-            // Parse location (assuming format: "latitude,longitude" or address)
-            val locationParts = alert.location.split(",")
-            if (locationParts.size == 2) {
-                try {
-                    val lat = locationParts[0].trim().toDouble()
-                    val lng = locationParts[1].trim().toDouble()
-                    val latLng = LatLng(lat, lng)
-                    
-                    // Clear old detection markers/circles and replot everything
-                    markers.forEach { it.remove() }
-                    markers.clear()
-                    detectionCircles.forEach { it.remove() }
-                    detectionCircles.clear()
-                    
-                    // Plot historical detections
-                    showAllDetectionsOnMap()
-                    
-                    val liveDanger = com.example.animalalert.model.DetectionHistory.calculateDangerLevel(alert.animal_type, alert.confidence)
-                    val colorConfig = getColorConfigForDangerLevel(liveDanger)
-                    val liveDotIcon = vectorToBitmap(colorConfig.drawableId)
-                    val liveCircleStroke = colorConfig.strokeColor
-                    val liveCircleFill = colorConfig.fillColor
-                    
-                    // Add new LIVE marker
-                    val marker = googleMap?.addMarker(
-                        MarkerOptions()
-                            .position(latLng)
-                            .title("LIVE: ${alert.animal_type ?: "Unknown"}")
-                            .snippet("Confidence: ${alert.confidence}%")
-                            .anchor(0.5f, 0.5f) // Center the dot
-                            .icon(liveDotIcon)
-                    )
-                    marker?.let { markers.add(it) }
-                    
-                    // Add LIVE red/blue circle
-                    val liveCircle = googleMap?.addCircle(
-                        com.google.android.gms.maps.model.CircleOptions()
-                            .center(latLng)
-                            .radius(150.0)
-                            .strokeWidth(3f)
-                            .strokeColor(liveCircleStroke)
-                            .fillColor(liveCircleFill)
-                    )
-                    liveCircle?.let { detectionCircles.add(it) }
-                    
-                    // Move camera to marker
-                    googleMap?.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15f))
-                    
-                    // Show info window
-                    marker?.showInfoWindow()
-                    
-                    binding.tvStatus.text = "Animal detected: ${alert.animal_type ?: "Unknown"}"
-                } catch (e: Exception) {
-                    if (e !is CancellationException) {
-                        context?.let { Toast.makeText(it, "Invalid location format", Toast.LENGTH_SHORT).show() }
-                    }
+        val lat = alert.latitude ?: alert.location?.split(",")?.getOrNull(0)?.trim()?.toDoubleOrNull()
+        val lng = alert.longitude ?: alert.location?.split(",")?.getOrNull(1)?.trim()?.toDoubleOrNull()
+
+        if (alert.animal_detected && lat != null && lng != null) {
+            try {
+                val latLng = LatLng(lat, lng)
+
+                markers.forEach { it.remove() }
+                markers.clear()
+                detectionCircles.forEach { it.remove() }
+                detectionCircles.clear()
+
+                showAllDetectionsOnMap()
+
+                val liveDanger = com.example.animalalert.model.DetectionHistory.calculateDangerLevel(alert.animal_type, alert.confidence)
+                val colorConfig = getColorConfigForDangerLevel(liveDanger)
+                val liveDotIcon = vectorToBitmap(colorConfig.drawableId)
+                val liveCircleStroke = colorConfig.strokeColor
+                val liveCircleFill = colorConfig.fillColor
+
+                val marker = googleMap?.addMarker(
+                    MarkerOptions()
+                        .position(latLng)
+                        .title("LIVE: ${alert.animal_type ?: "Unknown"}")
+                        .snippet("Confidence: ${alert.confidence}%")
+                        .anchor(0.5f, 0.5f)
+                        .icon(liveDotIcon)
+                )
+                marker?.let { markers.add(it) }
+
+                val liveCircle = googleMap?.addCircle(
+                    com.google.android.gms.maps.model.CircleOptions()
+                        .center(latLng)
+                        .radius(150.0)
+                        .strokeWidth(3f)
+                        .strokeColor(liveCircleStroke)
+                        .fillColor(liveCircleFill)
+                )
+                liveCircle?.let { detectionCircles.add(it) }
+
+                googleMap?.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15f))
+                marker?.showInfoWindow()
+
+                binding.tvMapSubtitle.text = "Animal detected: ${alert.animal_type ?: "Unknown"}"
+            } catch (e: Exception) {
+                if (e !is CancellationException) {
+                    context?.let { Toast.makeText(it, "Invalid location format", Toast.LENGTH_SHORT).show() }
                 }
-            } else {
-                binding.tvStatus.text = "Animal detected but location not available"
             }
+        } else if (alert.animal_detected) {
+            binding.tvMapSubtitle.text = "Animal detected but location not available"
         } else {
-            binding.tvStatus.text = "No active alerts"
+            updateMapHeader()
             markers.forEach { it.remove() }
             markers.clear()
         }
@@ -451,25 +454,139 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         return BitmapDescriptorFactory.fromBitmap(bitmap)
     }
 
+    private suspend fun loadCamerasFromServer(): Boolean {
+        return try {
+            val resp = withContext(Dispatchers.IO) {
+                RetrofitClient.api.getCameras().execute()
+            }
+            if (resp.isSuccessful) {
+                val list = resp.body() ?: emptyList()
+                withContext(Dispatchers.Main) {
+                    cameraData.clear()
+                    cameraData.addAll(list)
+                }
+                true
+            } else {
+                false
+            }
+        } catch (e: Exception) {
+            if (e !is CancellationException) {
+                android.util.Log.w("MapFragment", "Failed to load cameras: ${e.message}")
+            }
+            false
+        }
+    }
+
+    private fun performMapRefresh(showAnimation: Boolean) {
+        if (showAnimation && _binding != null) {
+            binding.mapSwipeRefresh.isRefreshing = true
+        }
+        scope.launch {
+            loadCamerasFromServer()
+            if (_binding != null && googleMap != null) {
+                plotCameras()
+                updateMapHeader()
+            }
+            fetchLatestAlert()
+            if (_binding != null) {
+                binding.mapSwipeRefresh.isRefreshing = false
+            }
+        }
+    }
+
+    private fun updateMapHeader() {
+        val b = _binding ?: return
+        val city = cameraData.mapNotNull { it.deploymentCity() }.firstOrNull() ?: "Surveillance"
+        val activeCount = cameraData.count { it.status != "offline" }
+        val total = cameraData.size
+        val primary = cameraData.count { it.is_primary == true }
+
+        b.tvStatus.text = "$city — camera map"
+        b.tvMapSubtitle.text = if (total > 0) {
+            "$total cameras · $activeCount active · $primary primary · $city"
+        } else {
+            "No cameras on server · check connection"
+        }
+
+        b.tvCameraLegend.text = if (cameraData.isNotEmpty()) {
+            cameraData.sortedBy { it.camera_number ?: Int.MAX_VALUE }
+                .joinToString("  ") { cam ->
+                    val idx = cam.camera_number ?: (cameraData.indexOf(cam) + 1)
+                    cam.displayTitle(idx)
+                }
+        } else {
+            ""
+        }
+    }
+
+    private fun startCameraSync() {
+        cameraSyncJob?.cancel()
+        cameraSyncJob = scope.launch {
+            while (isActive) {
+                delay(30_000)
+                if (_binding != null && googleMap != null) {
+                    performMapRefresh(showAnimation = true)
+                }
+            }
+        }
+    }
+
+    private fun parseLatLng(location: String): LatLng? {
+        val parts = location.split(",")
+        if (parts.size != 2) return null
+        return try {
+            LatLng(parts[0].trim().toDouble(), parts[1].trim().toDouble())
+        } catch (_: Exception) {
+            null
+        }
+    }
+
+    private fun getCameraPositions(): List<Pair<LatLng, CameraInfo?>> {
+        val fromServer = cameraData.mapNotNull { cam ->
+            parseLatLng(cam.location)?.let { pos -> pos to cam }
+        }
+        if (fromServer.isNotEmpty()) return fromServer
+
+        return FALLBACK_CAMERA_LOCATIONS.map { it to null }
+    }
+
     private fun plotCameras() {
         val map = googleMap ?: return
-        val cameraIcon = vectorToBitmap(R.drawable.ic_camera)
-        
+        val ctx = context ?: return
+
         cameraMarkers.forEach { it.remove() }
         cameraMarkers.clear()
-        
-        for (i in cameras.indices) {
+
+        updateMapHeader()
+
+        val positions = getCameraPositions()
+        for ((index, pair) in positions.withIndex()) {
+            val (latLng, info) = pair
+            val fallbackNum = index + 1
+            val status = info?.status?.takeIf { !it.isNullOrBlank() } ?: "active"
+            val offline = status == "offline"
+            val isPrimary = info?.is_primary == true
+            val pinStyle = MapPinHelper.pinStyleFor(status, isPrimary)
+            val pinNumber = info?.displayNumber(fallbackNum) ?: fallbackNum
+
+            val title = info?.displayTitle(fallbackNum)
+                ?: "#$pinNumber Camera $fallbackNum"
+            val snippet = info?.displaySnippet(fallbackNum)
+                ?: "#$pinNumber · ${status.uppercase()}"
+
+            val pinIcon = MapPinHelper.createNumberedPin(ctx, pinNumber, pinStyle)
             val marker = map.addMarker(
                 MarkerOptions()
-                    .position(cameras[i])
-                    .title("Surveillance Camera ${i + 1}")
-                    .snippet("Status: Scanning active · 100% Signal Strength")
-                    .icon(cameraIcon)
+                    .position(latLng)
+                    .title(if (offline) "⏸ $title" else title)
+                    .snippet(snippet)
+                    .icon(pinIcon)
+                    .anchor(0.5f, 0.5f)
+                    .alpha(if (offline) 0.75f else 1f)
             )
             marker?.let { cameraMarkers.add(it) }
         }
-        
-        // Start the pulsing scanning animation!
+
         startRadarScanAnimation()
     }
 
@@ -478,15 +595,19 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         cameraCircles.forEach { it.remove() }
         cameraCircles.clear()
 
-        // Create the circles
-        for (loc in cameras) {
+        val positions = getCameraPositions()
+        for ((loc, info) in positions) {
+            val pinStyle = MapPinHelper.pinStyleFor(info?.status, info?.is_primary == true)
+            val offline = info?.status == "offline"
+            val stroke = MapPinHelper.colorFor(pinStyle)
+            val fill = (stroke and 0x00FFFFFF) or 0x1A000000
             val circle = googleMap?.addCircle(
                 com.google.android.gms.maps.model.CircleOptions()
                     .center(loc)
-                    .radius(50.0)
+                    .radius(if (offline) 35.0 else 50.0)
                     .strokeWidth(2.5f)
-                    .strokeColor(android.graphics.Color.parseColor("#2196F3"))
-                    .fillColor(android.graphics.Color.parseColor("#1A2196F3"))
+                    .strokeColor(stroke)
+                    .fillColor(fill)
             )
             circle?.let { cameraCircles.add(it) }
         }
@@ -502,8 +623,8 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                 val fillAlphaHex = String.format("%02X", (alphaPercent * 25).toInt())
                 val strokeAlphaHex = String.format("%02X", (alphaPercent * 200).toInt())
                 
-                val fillColor = android.graphics.Color.parseColor("#${fillAlphaHex}00E676")
-                val strokeColor = android.graphics.Color.parseColor("#${strokeAlphaHex}00E676")
+                val fillColor = android.graphics.Color.parseColor("#${fillAlphaHex}00C853")
+                val strokeColor = android.graphics.Color.parseColor("#${strokeAlphaHex}00C853")
                 
                 withContext(Dispatchers.Main) {
                     for (circle in cameraCircles) {
@@ -517,15 +638,17 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         }
     }
 
+    /** Called from toolbar refresh when the map tab is visible. */
+    fun refreshFromToolbar() {
+        performMapRefresh(showAnimation = true)
+    }
+
     override fun onDestroyView() {
         super.onDestroyView()
         scanJob?.cancel()
+        cameraSyncJob?.cancel()
         job.cancel()
         _binding = null
-    }
-
-    companion object {
-        private const val LOCATION_PERMISSION_REQUEST_CODE = 1001
     }
 }
 

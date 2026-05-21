@@ -13,6 +13,7 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.fragment.app.Fragment
 import com.example.animalalert.databinding.FragmentSettingsBinding
 import com.example.animalalert.ui.LoginActivity
+import com.example.animalalert.network.RetrofitClient
 import com.example.animalalert.utils.PreferenceManager
 
 class SettingsFragment : Fragment() {
@@ -183,7 +184,8 @@ class SettingsFragment : Fragment() {
                 showQuickToast("URL cannot be empty")
             } else {
                 prefs.setServerUrl(url)
-                showQuickToast("Server URL saved")
+                RetrofitClient.setBaseUrl(url)
+                showQuickToast("Server URL saved — API client updated")
             }
         }
 

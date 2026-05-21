@@ -8,9 +8,11 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.example.animalalert.R
 import com.example.animalalert.databinding.FragmentDashboardBinding
+import com.example.animalalert.model.CameraInfo
 import com.example.animalalert.model.DetectionHistory
 import com.example.animalalert.model.AlertResponse
 import com.example.animalalert.network.RetrofitClient
+import com.example.animalalert.utils.ServerSyncManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -28,6 +30,7 @@ class DashboardFragment : Fragment() {
     private val scope = CoroutineScope(Dispatchers.Main + job)
 
     private var currentActiveCount: Int = 0
+    private val serverCameras = mutableListOf<CameraInfo>()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -41,12 +44,15 @@ class DashboardFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         preferenceManager = com.example.animalalert.utils.PreferenceManager(requireContext())
+        ServerSyncManager.configureRetrofit(requireContext())
         setupViews()
         setupClickListeners()
         loadRecentDetections()
         updateHeaderFromPrefs()
         updateStats(activeCount = 0)
-        fetchLatestAlertAndUpdateActiveBanner()
+        syncHistoryAndRefresh()
+        refreshServerCameraStatus()
+        loadServerCameras()
     }
 
     private fun setupViews() {
@@ -103,14 +109,72 @@ class DashboardFragment : Fragment() {
         }
     }
 
-    private fun updateHeaderFromPrefs() {
+    private fun updateHeaderFromPrefs(cameraLine: String? = null) {
         val b = _binding ?: return
-        // Header elements are part of the HTML phone mockup.
         val name = preferenceManager.getUserName().ifEmpty { "User" }
         val greeting = getTimeBasedGreeting()
         b.tvUserName.text = "$name 👋"
         b.tvTitle.text = greeting
-        b.tvLiveBadge.text = "SYSTEM ACTIVE · 3 CAMERAS"
+        b.tvLiveBadge.text = cameraLine ?: "SYSTEM ACTIVE · SYNCING CAMERAS…"
+    }
+
+    private fun refreshServerCameraStatus() {
+        scope.launch {
+            try {
+                val status = withContext(Dispatchers.IO) {
+                    RetrofitClient.api.getSystemStatus().execute().body()
+                }
+                val b = _binding ?: return@launch
+                if (status != null) {
+                    val city = status.deployment_city?.takeIf { it.isNotBlank() }
+                        ?: serverCameras.firstOrNull()?.deploymentCity()
+                    val cityPart = city?.let { "$it · " } ?: ""
+                    val mon = if (status.monitoring_enabled) "MONITORING ON" else "MONITORING OFF"
+                    b.tvLiveBadge.text =
+                        "$cityPart$mon · ${status.cameras_active}/${status.cameras_total} CAMERAS · ${status.active_camera_name ?: status.active_detection_camera ?: "—"}"
+                }
+            } catch (_: Exception) {
+                updateHeaderFromPrefs("SYSTEM ACTIVE · OFFLINE MODE")
+            }
+        }
+    }
+
+    private fun loadServerCameras() {
+        scope.launch {
+            try {
+                val list = withContext(Dispatchers.IO) {
+                    val resp = RetrofitClient.api.getCameras().execute()
+                    if (resp.isSuccessful) resp.body() ?: emptyList() else emptyList()
+                }
+                val b = _binding ?: return@launch
+                serverCameras.clear()
+                serverCameras.addAll(list)
+
+                if (list.isEmpty()) {
+                    b.tvCameraCoverageBadge.text = "NO CAMERAS"
+                    b.tvCameraList.visibility = View.GONE
+                    return@launch
+                }
+
+                val city = list.firstNotNullOfOrNull { it.deploymentCity() } ?: "—"
+                val active = list.count { it.status != "offline" }
+                b.tvCameraCoverageBadge.text = "$active/${list.size} ACTIVE · $city"
+
+                val lines = list.sortedBy { it.camera_number ?: Int.MAX_VALUE }
+                    .joinToString("\n") { cam ->
+                        val idx = cam.camera_number ?: (list.indexOf(cam) + 1)
+                        val status = cam.status?.uppercase() ?: "ACTIVE"
+                        val primary = if (cam.is_primary == true) " · PRIMARY" else ""
+                        "${cam.displayTitle(idx)} · $status · ${cam.deploymentCity() ?: city}$primary"
+                    }
+                b.tvCameraList.text = lines
+                b.tvCameraList.visibility = View.VISIBLE
+            } catch (_: Exception) {
+                val b = _binding ?: return@launch
+                b.tvCameraCoverageBadge.text = "OFFLINE"
+                b.tvCameraList.visibility = View.GONE
+            }
+        }
     }
 
     private fun getTimeBasedGreeting(): String {
@@ -270,10 +334,18 @@ class DashboardFragment : Fragment() {
     }
 
     fun refreshData() {
-        // Called when fragment is resumed or manually refreshed
-        loadRecentDetections()
-        updateStats(activeCount = currentActiveCount)
-        fetchLatestAlertAndUpdateActiveBanner()
+        syncHistoryAndRefresh()
+    }
+
+    private fun syncHistoryAndRefresh() {
+        scope.launch {
+            ServerSyncManager.syncHistoryFromServer(requireContext())
+            loadRecentDetections()
+            updateStats(activeCount = currentActiveCount)
+            fetchLatestAlertAndUpdateActiveBanner()
+            refreshServerCameraStatus()
+            loadServerCameras()
+        }
     }
 
     private fun showCameraFeedDialog(detection: DetectionHistory) {
@@ -308,14 +380,19 @@ class DashboardFragment : Fragment() {
         val lat = detection.latitude
         val lng = detection.longitude
         if (lat != null && lng != null && lat != 0.0 && lng != 0.0) {
-            val camName = cameraPlaceholder(detection.id)
+            val camName = cameraLabelForDetection(detection.id)
             tvDialogCoords.text = "📍 Coordinates: %.4f, %.4f (%s)".format(lat, lng, camName)
         } else {
             tvDialogCoords.text = "📍 Location: ${detection.location ?: "N/A"}"
         }
-        
-        val camName = cameraPlaceholder(detection.id)
-        dialogSubtitle.text = "Camera: $camName  ·  Live Capture"
+
+        val camName = cameraLabelForDetection(detection.id)
+        val city = serverCameras.firstOrNull()?.deploymentCity()
+        dialogSubtitle.text = if (city != null) {
+            "Camera: $camName  ·  $city  ·  Live Capture"
+        } else {
+            "Camera: $camName  ·  Live Capture"
+        }
         tvCameraWatermark.text = "$camName [LIVE]"
         
         val sdf = java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
@@ -377,9 +454,15 @@ class DashboardFragment : Fragment() {
         }
     }
 
-    private fun cameraPlaceholder(detectionId: String): String {
+    private fun cameraLabelForDetection(detectionId: String): String {
+        if (serverCameras.isNotEmpty()) {
+            val idx = kotlin.math.abs(detectionId.hashCode()) % serverCameras.size
+            val cam = serverCameras.sortedBy { it.camera_number ?: Int.MAX_VALUE }[idx]
+            val num = cam.camera_number ?: (idx + 1)
+            return cam.displayTitle(num)
+        }
         val cam = (kotlin.math.abs(detectionId.hashCode()) % 3) + 1
-        return "Cam-%02d".format(cam)
+        return "#$cam Camera"
     }
 
     override fun onDestroyView() {

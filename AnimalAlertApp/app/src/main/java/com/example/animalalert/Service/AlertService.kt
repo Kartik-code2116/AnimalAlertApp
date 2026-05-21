@@ -16,6 +16,7 @@ import com.example.animalalert.network.RetrofitClient
 import com.example.animalalert.utils.EmailHelper
 import com.example.animalalert.utils.NotificationHelper
 import com.example.animalalert.utils.PreferenceManager
+import com.example.animalalert.utils.ServerSyncManager
 import com.example.animalalert.utils.SMSHelper
 import kotlinx.coroutines.*
 import retrofit2.awaitResponse
@@ -41,6 +42,7 @@ class AlertService : Service() {
 
     override fun onCreate() {
         super.onCreate()
+        ServerSyncManager.configureRetrofit(this)
         startForegroundWithNotification()
     }
 
@@ -180,21 +182,9 @@ class AlertService : Service() {
     override fun onBind(intent: Intent?): IBinder? = null
 
     private fun saveDetectionToHistory(alert: AlertResponse, prefs: PreferenceManager) {
-        // Parse location if available
-        var latitude: Double? = null
-        var longitude: Double? = null
-        
-        alert.location?.let { location ->
-            val parts = location.split(",")
-            if (parts.size == 2) {
-                try {
-                    latitude = parts[0].trim().toDouble()
-                    longitude = parts[1].trim().toDouble()
-                } catch (e: Exception) {
-                    // Location format not valid
-                }
-            }
-        }
+        // Prefer direct lat/lng fields from server, fallback to parsing location string
+        val latitude = alert.latitude ?: alert.location?.split(",")?.getOrNull(0)?.trim()?.toDoubleOrNull()
+        val longitude = alert.longitude ?: alert.location?.split(",")?.getOrNull(1)?.trim()?.toDoubleOrNull()
         
         // Normalize timestamp to milliseconds (Python sends seconds)
         val normalizedTimestamp = if (alert.timestamp < 1000000000000L) alert.timestamp * 1000 else alert.timestamp

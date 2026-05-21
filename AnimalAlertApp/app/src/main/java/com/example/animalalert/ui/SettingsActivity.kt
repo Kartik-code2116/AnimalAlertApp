@@ -25,6 +25,7 @@ class SettingsActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         preferenceManager = PreferenceManager(this)
+        RetrofitClient.configure(this)
 
         setupToolbar()
         loadSettings()

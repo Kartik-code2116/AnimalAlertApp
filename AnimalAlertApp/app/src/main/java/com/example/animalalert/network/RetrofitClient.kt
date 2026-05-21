@@ -1,5 +1,7 @@
 package com.example.animalalert.network
 
+import android.content.Context
+import com.example.animalalert.utils.PreferenceManager
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
@@ -8,7 +10,7 @@ import java.util.concurrent.TimeUnit
 
 object RetrofitClient {
 
-    private const val DEFAULT_BASE_URL = "http://10.30.201.240:5000/"
+    private const val DEFAULT_BASE_URL = "http://192.168.1.100:5000/"
     private var currentBaseUrl: String = DEFAULT_BASE_URL
     private var retrofit: Retrofit? = null
 
@@ -35,6 +37,16 @@ object RetrofitClient {
     fun resetToDefault() {
         currentBaseUrl = DEFAULT_BASE_URL
         retrofit = null
+    }
+
+    /** Read server URL from settings and rebuild Retrofit if it changed. */
+    fun configure(context: Context) {
+        setBaseUrl(PreferenceManager(context).getServerUrl())
+    }
+
+    fun getApi(context: Context): ApiService {
+        configure(context)
+        return api
     }
 
     val api: ApiService

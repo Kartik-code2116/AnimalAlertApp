@@ -40,13 +40,17 @@ Animal Alert App is an Android application designed to detect, track, and alert 
 
 3. **Provide API Keys**:
    - Add your Google Maps API key in the `AndroidManifest.xml` or your `local.properties` file.
-   - Configure your Retrofit Base URL in `RetrofitClient.kt` to point to your live detection API. 
+   - Set the WildTrack server URL in **Settings → Server URL** (saved in `PreferenceManager`). The app syncs `RetrofitClient` from that value on launch.
 
-4. **YOLOv8 Model Setup**: 
+4. **WildTrack backend (separate project)**:
+   - Run the production Flask server from the **Animal_alert server** project (`server.py` with MongoDB, `/api/cameras`, `/api/alerts`, `/api/auth/*`).
+   - Do not use a local `server.py` inside this Android repo — it was removed to avoid confusion with the real backend.
+
+5. **YOLOv8 Model Setup**: 
    - Ensure your `.pt` or `.torchscript.pt` YOLOv8 model is placed inside the `app/src/main/assets/` directory.
    - Edit the `CLASS_NAMES` array inside `YOLOv8Detector.kt` to precisely match the classes your model was trained on.
 
-5. **Build and Run**: Deploy the app on your physical device to test camera inferences and map features.
+6. **Build and Run**: Deploy the app on your physical device to test camera inferences and map features.
 
 ## App Architecture & Performance
 

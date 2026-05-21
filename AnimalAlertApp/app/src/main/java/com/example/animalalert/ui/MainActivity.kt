@@ -22,13 +22,21 @@ import com.example.animalalert.ui.fragments.AlertSystemFragment
 import com.example.animalalert.ui.fragments.DashboardFragment
 import com.example.animalalert.ui.fragments.MapFragment
 import com.example.animalalert.ui.fragments.ProfileFragment
+import com.example.animalalert.network.RetrofitClient
 import com.example.animalalert.utils.PreferenceManager
+import com.example.animalalert.utils.ServerSyncManager
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
 
     lateinit var binding: ActivityMainBinding
     private lateinit var preferenceManager: PreferenceManager
     var triggerMapAnimation = false
+    private val syncJob = SupervisorJob()
+    private val syncScope = CoroutineScope(Dispatchers.Main + syncJob)
 
     private val locationPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
@@ -45,6 +53,7 @@ class MainActivity : AppCompatActivity() {
 
         // Apply saved theme BEFORE setContentView to avoid flicker
         preferenceManager = PreferenceManager(this)
+        ServerSyncManager.configureRetrofit(this)
         applyThemeSetting()
 
         setContentView(binding.root)
@@ -76,7 +85,10 @@ class MainActivity : AppCompatActivity() {
         }
 
         setupBottomNavigation()
- 
+        syncScope.launch {
+            ServerSyncManager.syncHistoryFromServer(this@MainActivity)
+        }
+
         // Check if we need to show a specific detection on map
         val showDetection = intent.getBooleanExtra("show_detection", false)
         if (showDetection) {
@@ -253,7 +265,17 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun refreshAppData() {
-        Toast.makeText(this, "Refreshing data...", Toast.LENGTH_SHORT).show()
+        ServerSyncManager.configureRetrofit(this)
+        (supportFragmentManager.findFragmentById(R.id.fragment_container) as? MapFragment)
+            ?.refreshFromToolbar()
+        (supportFragmentManager.findFragmentById(R.id.fragment_container) as? DashboardFragment)
+            ?.refreshData()
+        syncScope.launch {
+            val added = ServerSyncManager.syncHistoryFromServer(this@MainActivity)
+            if (added > 0) {
+                Toast.makeText(this@MainActivity, "Synced $added detections from server", Toast.LENGTH_SHORT).show()
+            }
+        }
         // Restart the alert service to refresh
         try {
             val intent = Intent(this, AlertService::class.java)
@@ -327,6 +349,11 @@ class MainActivity : AppCompatActivity() {
                     "For support, contact: support@animalalert.com")
             .setPositiveButton("OK", null)
             .show()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        syncJob.cancel()
     }
 
     private fun showLogoutConfirmation() {

@@ -2,10 +2,17 @@ package com.example.animalalert.ui
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.animalalert.databinding.ActivityLoginBinding
+import com.example.animalalert.model.LoginRequest
+import com.example.animalalert.network.RetrofitClient
 import com.example.animalalert.utils.PreferenceManager
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+import com.example.animalalert.model.AuthResponse
 
 class LoginActivity : AppCompatActivity() {
 
@@ -25,6 +32,9 @@ class LoginActivity : AppCompatActivity() {
             return
         }
 
+        // Sync RetrofitClient with saved server URL before any call
+        RetrofitClient.setBaseUrl(preferenceManager.getServerUrl())
+
         binding.btnLogin.setOnClickListener {
             performLogin()
         }
@@ -39,10 +49,10 @@ class LoginActivity : AppCompatActivity() {
     }
 
     private fun performLogin() {
-        val user = binding.etEmail.text.toString().trim()
+        val email = binding.etEmail.text.toString().trim()
         val password = binding.etPassword.text.toString().trim()
 
-        if (user.isEmpty() || password.isEmpty()) {
+        if (email.isEmpty() || password.isEmpty()) {
             Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show()
             return
         }
@@ -52,13 +62,52 @@ class LoginActivity : AppCompatActivity() {
             return
         }
 
-        // Simulate login (in real app, this would be API call)
-        preferenceManager.setLoggedIn(true)
-        // The HTML mockup uses a username-style identifier, not necessarily an email address.
-        preferenceManager.saveUserData(user, user, "")
-        
-        Toast.makeText(this, "Login successful!", Toast.LENGTH_SHORT).show()
-        navigateToMain()
+        setLoading(true)
+
+        RetrofitClient.api.login(LoginRequest(email, password))
+            .enqueue(object : Callback<AuthResponse> {
+                override fun onResponse(call: Call<AuthResponse>, response: Response<AuthResponse>) {
+                    setLoading(false)
+                    val body = response.body()
+                    if (response.isSuccessful && body?.status == "success") {
+                        preferenceManager.setLoggedIn(true)
+                        preferenceManager.saveUserData(
+                            body.user?.name ?: email,
+                            email,
+                            ""
+                        )
+                        Toast.makeText(this@LoginActivity, "Login successful!", Toast.LENGTH_SHORT).show()
+                        navigateToMain()
+                    } else {
+                        val msg = body?.message ?: "Invalid credentials"
+                        Toast.makeText(this@LoginActivity, msg, Toast.LENGTH_LONG).show()
+                    }
+                }
+
+                override fun onFailure(call: Call<AuthResponse>, t: Throwable) {
+                    setLoading(false)
+                    // Fallback: allow offline login so the app still works without server
+                    android.util.Log.w("LoginActivity", "Server unreachable: ${t.message}")
+                    Toast.makeText(
+                        this@LoginActivity,
+                        "Server unreachable — using offline mode",
+                        Toast.LENGTH_LONG
+                    ).show()
+                    preferenceManager.setLoggedIn(true)
+                    preferenceManager.saveUserData(email, email, "")
+                    navigateToMain()
+                }
+            })
+    }
+
+    private fun setLoading(loading: Boolean) {
+        binding.btnLogin.isEnabled = !loading
+        binding.btnLogin.text = if (loading) "Logging in…" else "Login"
+        // Show/hide progress if the layout has a progress bar (graceful fallback)
+        try {
+            val progressBar = binding.root.findViewWithTag<View>("progressBar")
+            progressBar?.visibility = if (loading) View.VISIBLE else View.GONE
+        } catch (_: Exception) {}
     }
 
     private fun navigateToMain() {
@@ -68,5 +117,3 @@ class LoginActivity : AppCompatActivity() {
         finish()
     }
 }
-
-
