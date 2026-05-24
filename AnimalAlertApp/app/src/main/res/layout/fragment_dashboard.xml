@@ -313,10 +313,14 @@
 
             <!-- Total -->
             <androidx.cardview.widget.CardView
+                android:id="@+id/cardTotal"
                 android:layout_width="0dp"
                 android:layout_height="86dp"
                 android:layout_weight="1"
                 android:layout_marginStart="6dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?android:attr/selectableItemBackground"
                 app:cardBackgroundColor="@color/bg_card2"
                 app:cardCornerRadius="14dp"
                 app:cardElevation="0dp">
@@ -479,6 +483,19 @@
                 android:textColor="@color/text_primary"
                 android:textSize="15sp"
                 android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvViewAll"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="View All"
+                android:textColor="@color/accent"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:padding="8dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="?android:attr/selectableItemBackground" />
         </LinearLayout>
 
         <androidx.recyclerview.widget.RecyclerView

@@ -146,52 +146,56 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         detectionCircles.forEach { it.remove() }
         detectionCircles.clear()
         
-        val historyList = com.example.animalalert.utils.PreferenceManager(ctx).getDetectionHistory()
+        val preferenceManager = com.example.animalalert.utils.PreferenceManager(ctx)
+        val historyList = preferenceManager.getDetectionHistory()
+        val showHistory = preferenceManager.isShowHistoryOnMap()
         
         var foundFocusInHistory = false
-        for (detection in historyList) {
-            val lat = detection.latitude ?: continue
-            val lng = detection.longitude ?: continue
-            val latLng = LatLng(lat, lng)
-            val dangerText = detection.getDangerLevelText()
-            
-            val colorConfig = getColorConfigForDangerLevel(detection.dangerLevel)
-            val dotIcon = vectorToBitmap(colorConfig.drawableId)
-            val circleStroke = colorConfig.strokeColor
-            val circleFill = colorConfig.fillColor
-            
-            val isFocusMatch = focusLat != null && focusLng != null && 
-                    kotlin.math.abs(lat - focusLat) < 0.0001 && 
-                    kotlin.math.abs(lng - focusLng) < 0.0001
-            
-            if (isFocusMatch) {
-                foundFocusInHistory = true
-            }
-            
-            val marker = googleMap?.addMarker(
-                MarkerOptions()
-                    .position(latLng)
-                    .title("Animal Detected: ${detection.animalType ?: "Unknown"}")
-                    .snippet("Confidence: ${detection.confidence}% | Danger: $dangerText | Location: ${detection.location ?: "N/A"}")
-                    .anchor(0.5f, 0.5f) // Center the dot
-                    .icon(dotIcon)
-            )
-            marker?.let { 
-                markers.add(it)
+        if (showHistory) {
+            for (detection in historyList) {
+                val lat = detection.latitude ?: continue
+                val lng = detection.longitude ?: continue
+                val latLng = LatLng(lat, lng)
+                val dangerText = detection.getDangerLevelText()
+                
+                val colorConfig = getColorConfigForDangerLevel(detection.dangerLevel)
+                val dotIcon = vectorToBitmap(colorConfig.drawableId)
+                val circleStroke = colorConfig.strokeColor
+                val circleFill = colorConfig.fillColor
+                
+                val isFocusMatch = focusLat != null && focusLng != null && 
+                        kotlin.math.abs(lat - focusLat) < 0.0001 && 
+                        kotlin.math.abs(lng - focusLng) < 0.0001
+                
                 if (isFocusMatch) {
-                    it.showInfoWindow()
+                    foundFocusInHistory = true
                 }
+                
+                val marker = googleMap?.addMarker(
+                    MarkerOptions()
+                        .position(latLng)
+                        .title("Animal Detected: ${detection.animalType ?: "Unknown"}")
+                        .snippet("Confidence: ${detection.confidence}% | Danger: $dangerText | Location: ${detection.location ?: "N/A"}")
+                        .anchor(0.5f, 0.5f) // Center the dot
+                        .icon(dotIcon)
+                )
+                marker?.let { 
+                    markers.add(it)
+                    if (isFocusMatch) {
+                        it.showInfoWindow()
+                    }
+                }
+                
+                val circle = googleMap?.addCircle(
+                    com.google.android.gms.maps.model.CircleOptions()
+                        .center(latLng)
+                        .radius(150.0)
+                        .strokeWidth(2f)
+                        .strokeColor(circleStroke)
+                        .fillColor(circleFill)
+                )
+                circle?.let { detectionCircles.add(it) }
             }
-            
-            val circle = googleMap?.addCircle(
-                com.google.android.gms.maps.model.CircleOptions()
-                    .center(latLng)
-                    .radius(150.0)
-                    .strokeWidth(2f)
-                    .strokeColor(circleStroke)
-                    .fillColor(circleFill)
-            )
-            circle?.let { detectionCircles.add(it) }
         }
         
         // If the focused coordinates were not in the saved history list, plot them dynamically!
@@ -238,7 +242,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                 1 -> "Low"; 2 -> "Moderate"; 3 -> "Medium"; 4 -> "High"; 5 -> "Very High"; else -> "Unknown"
             }
             binding.tvMapSubtitle.text = "📍 Focused on: ${focusAnimalType ?: "Unknown"} (Danger: $dangerText)"
-        } else if (historyList.isNotEmpty()) {
+        } else if (historyList.isNotEmpty() && showHistory) {
             val first = historyList.first()
             if (first.latitude != null && first.longitude != null) {
                 googleMap?.animateCamera(CameraUpdateFactory.newLatLngZoom(LatLng(first.latitude, first.longitude), 12f))
@@ -352,8 +356,9 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     private fun fetchLatestAlert() {
         scope.launch {
             try {
+                val ctx = context ?: return@launch
                 val response = withContext(Dispatchers.IO) {
-                    RetrofitClient.api.getLatestAlert().execute()
+                    RetrofitClient.api.getLatestAlert(null).execute()
                 }
                 if (response.isSuccessful) {
                     response.body()?.let { alert ->
@@ -377,7 +382,14 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         val lat = alert.latitude ?: alert.location?.split(",")?.getOrNull(0)?.trim()?.toDoubleOrNull()
         val lng = alert.longitude ?: alert.location?.split(",")?.getOrNull(1)?.trim()?.toDoubleOrNull()
 
-        if (alert.animal_detected && lat != null && lng != null) {
+        val prefs = com.example.animalalert.utils.PreferenceManager(ctx)
+        val dangerLevel = com.example.animalalert.model.DetectionHistory.calculateDangerLevel(alert.animal_type, alert.confidence)
+        val meetsConfidence = alert.confidence >= prefs.getConfidenceThreshold()
+        val isWild = com.example.animalalert.model.DetectionHistory.isWildAnimal(alert.animal_type)
+
+        val isAlertActive = alert.animal_detected && meetsConfidence && (!prefs.isDangerOnly() || (isWild && dangerLevel >= 3))
+
+        if (isAlertActive && lat != null && lng != null) {
             try {
                 val latLng = LatLng(lat, lng)
 
@@ -388,8 +400,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
                 showAllDetectionsOnMap()
 
-                val liveDanger = com.example.animalalert.model.DetectionHistory.calculateDangerLevel(alert.animal_type, alert.confidence)
-                val colorConfig = getColorConfigForDangerLevel(liveDanger)
+                val colorConfig = getColorConfigForDangerLevel(dangerLevel)
                 val liveDotIcon = vectorToBitmap(colorConfig.drawableId)
                 val liveCircleStroke = colorConfig.strokeColor
                 val liveCircleFill = colorConfig.fillColor
@@ -414,7 +425,9 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                 )
                 liveCircle?.let { detectionCircles.add(it) }
 
-                googleMap?.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15f))
+                if (prefs.isAutoCenterMap()) {
+                    googleMap?.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15f))
+                }
                 marker?.showInfoWindow()
 
                 binding.tvMapSubtitle.text = "Animal detected: ${alert.animal_type ?: "Unknown"}"
@@ -423,19 +436,30 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                     context?.let { Toast.makeText(it, "Invalid location format", Toast.LENGTH_SHORT).show() }
                 }
             }
-        } else if (alert.animal_detected) {
+        } else if (alert.animal_detected && lat == null) {
             binding.tvMapSubtitle.text = "Animal detected but location not available"
+            updateMapHeader()
+            markers.forEach { it.remove() }
+            markers.clear()
+            showAllDetectionsOnMap()
         } else {
             updateMapHeader()
             markers.forEach { it.remove() }
             markers.clear()
+            showAllDetectionsOnMap()
         }
     }
 
     private fun startPeriodicUpdates() {
         scope.launch {
             while (true) {
-                delay(5000) // Update every 5 seconds
+                val ctx = context
+                val interval = if (ctx != null) {
+                    com.example.animalalert.utils.PreferenceManager(ctx).getPollIntervalSec().coerceIn(1, 10)
+                } else {
+                    5
+                }
+                delay(interval * 1000L)
                 fetchLatestAlert()
             }
         }

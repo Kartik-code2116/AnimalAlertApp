@@ -17,18 +17,26 @@ import retrofit2.http.GET
 import retrofit2.http.Body
 import retrofit2.http.DELETE
 import retrofit2.http.POST
+import retrofit2.http.Query
+import retrofit2.http.Path
 
 interface ApiService {
 
     // ── Existing endpoints ──────────────────────────────────────
     @GET("/latest-alert")
-    fun getLatestAlert(): Call<AlertResponse>
+    fun getLatestAlert(@Query("camera_id") cameraId: String? = null): Call<AlertResponse>
 
     @GET("/health")
     fun getHealth(): Call<HealthResponse>
 
     @POST("/register/camera")
     fun registerCamera(@Body body: CameraRegisterRequest): Call<GenericBackendResponse>
+
+    @POST("/api/cameras/{id}/control")
+    fun controlCamera(
+        @Path("id") cameraId: String,
+        @Body body: Map<String, String>
+    ): Call<GenericBackendResponse>
 
     @POST("/camera/detect")
     fun detectFromCamera(@Body body: CameraDetectRequest): Call<CameraDetectResponse>

@@ -145,7 +145,7 @@
                             android:id="@+id/etServerUrl"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:hint="e.g., http://192.168.1.100:5000"
+                            android:hint="e.g., http://10.30.201.240:5000"
                             android:textColor="@color/settings_text_primary"
                             android:inputType="textUri" />
                     </com.google.android.material.textfield.TextInputLayout>
@@ -329,6 +329,66 @@
                         app:thumbColor="@color/accent"
                         app:trackColor="@color/settings_divider"
                         app:trackColorActive="@color/accent" />
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:background="@color/settings_divider"
+                        android:layout_marginVertical="16dp" />
+
+                    <!-- Personal Focus Camera (Local) -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Personal Focus Camera (Local)"
+                        android:textSize="16sp"
+                        android:textColor="@color/settings_text_primary"
+                        android:layout_marginBottom="4dp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Filter alert feed and warnings for this session"
+                        android:textSize="12sp"
+                        android:textColor="@color/settings_text_secondary"
+                        android:layout_marginBottom="8dp" />
+
+                    <androidx.appcompat.widget.AppCompatSpinner
+                        android:id="@+id/spinnerFocusCamera"
+                        android:layout_width="match_parent"
+                        android:layout_height="48dp"
+                        android:backgroundTint="@color/accent"
+                        android:spinnerMode="dropdown" />
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:background="@color/settings_divider"
+                        android:layout_marginVertical="16dp" />
+
+                    <!-- Global Primary Camera (Server-Wide) -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Global Primary Camera (Server-Wide)"
+                        android:textSize="16sp"
+                        android:textColor="@color/settings_text_primary"
+                        android:layout_marginBottom="4dp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Update primary active camera for all passive operators"
+                        android:textSize="12sp"
+                        android:textColor="@color/settings_text_secondary"
+                        android:layout_marginBottom="8dp" />
+
+                    <androidx.appcompat.widget.AppCompatSpinner
+                        android:id="@+id/spinnerGlobalPrimaryCamera"
+                        android:layout_width="match_parent"
+                        android:layout_height="48dp"
+                        android:backgroundTint="@color/accent"
+                        android:spinnerMode="dropdown" />
 
                 </LinearLayout>
             </androidx.cardview.widget.CardView>

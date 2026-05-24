@@ -252,6 +252,50 @@
                         android:layout_width="match_parent" android:layout_height="wrap_content"
                         android:max="9" android:progress="2" />
                 </LinearLayout>
+
+                <View android:layout_width="match_parent" android:layout_height="1dp"
+                    android:background="@color/border" android:layout_marginHorizontal="16dp" />
+
+                <!-- Personal Focus Camera (Local) -->
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:orientation="vertical" android:paddingHorizontal="16dp"
+                    android:paddingTop="14dp" android:paddingBottom="14dp">
+                    <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+                        android:text="Personal Focus Camera (Local)"
+                        android:textSize="14sp" android:textColor="@color/text_primary" />
+                    <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+                        android:text="Filter alert feed and warnings for this session"
+                        android:textSize="11sp" android:textColor="@color/text_muted"
+                        android:layout_marginTop="2dp" android:layout_marginBottom="8dp" />
+                    <androidx.appcompat.widget.AppCompatSpinner
+                        android:id="@+id/spinnerFocusCamera"
+                        android:layout_width="match_parent"
+                        android:layout_height="48dp"
+                        android:backgroundTint="@color/accent"
+                        android:spinnerMode="dropdown" />
+                </LinearLayout>
+
+                <View android:layout_width="match_parent" android:layout_height="1dp"
+                    android:background="@color/border" android:layout_marginHorizontal="16dp" />
+
+                <!-- Global Primary Camera (Server-Wide) -->
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:orientation="vertical" android:paddingHorizontal="16dp"
+                    android:paddingTop="14dp" android:paddingBottom="14dp">
+                    <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+                        android:text="Global Primary Camera (Server-Wide)"
+                        android:textSize="14sp" android:textColor="@color/text_primary" />
+                    <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+                        android:text="Update primary active camera for all passive operators"
+                        android:textSize="11sp" android:textColor="@color/text_muted"
+                        android:layout_marginTop="2dp" android:layout_marginBottom="8dp" />
+                    <androidx.appcompat.widget.AppCompatSpinner
+                        android:id="@+id/spinnerGlobalPrimaryCamera"
+                        android:layout_width="match_parent"
+                        android:layout_height="48dp"
+                        android:backgroundTint="@color/accent"
+                        android:spinnerMode="dropdown" />
+                </LinearLayout>
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 

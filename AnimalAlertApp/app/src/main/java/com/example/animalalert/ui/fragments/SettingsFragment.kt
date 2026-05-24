@@ -15,12 +15,21 @@ import com.example.animalalert.databinding.FragmentSettingsBinding
 import com.example.animalalert.ui.LoginActivity
 import com.example.animalalert.network.RetrofitClient
 import com.example.animalalert.utils.PreferenceManager
+import android.widget.ArrayAdapter
+import android.widget.AdapterView
+import com.example.animalalert.model.CameraInfo
+import com.example.animalalert.model.SystemStatus
+import kotlinx.coroutines.*
 
 class SettingsFragment : Fragment() {
 
     private var _binding: FragmentSettingsBinding? = null
     private val binding get() = _binding!!
     private lateinit var prefs: PreferenceManager
+
+    private val job = SupervisorJob()
+    private val scope = CoroutineScope(Dispatchers.Main + job)
+    private var isSpinnersLoading = false
 
     // Flag to suppress recursive switch callbacks while loading
     private var isLoading = false
@@ -38,6 +47,7 @@ class SettingsFragment : Fragment() {
         prefs = PreferenceManager(requireContext())
         loadCurrentValues()
         setupListeners()
+        loadCamerasAndPopulateSpinners()
     }
 
     // ── Load saved preferences into UI ──────────────────────────────────────
@@ -179,10 +189,15 @@ class SettingsFragment : Fragment() {
         // ── Data & Privacy ────────────────────────────────────────────────────
 
         binding.btnSaveServerUrl.setOnClickListener {
-            val url = binding.etServerUrl.text?.toString()?.trim() ?: ""
+            var url = binding.etServerUrl.text?.toString()?.trim() ?: ""
             if (url.isEmpty()) {
                 showQuickToast("URL cannot be empty")
             } else {
+                // Auto-prepend http:// if scheme is missing
+                if (!url.startsWith("http://") && !url.startsWith("https://")) {
+                    url = "http://$url"
+                    binding.etServerUrl.setText(url)
+                }
                 prefs.setServerUrl(url)
                 RetrofitClient.setBaseUrl(url)
                 showQuickToast("Server URL saved — API client updated")
@@ -267,8 +282,156 @@ class SettingsFragment : Fragment() {
         Toast.makeText(requireContext(), msg, Toast.LENGTH_SHORT).show()
     }
 
+    // ── Dropdown Spinners Logic ──────────────────────────────────────────────
+
+    private fun loadCamerasAndPopulateSpinners() {
+        isSpinnersLoading = true
+        scope.launch {
+            try {
+                val camerasResponse = withContext(Dispatchers.IO) {
+                    RetrofitClient.api.getCameras().execute()
+                }
+                val statusResponse = withContext(Dispatchers.IO) {
+                    RetrofitClient.api.getSystemStatus().execute()
+                }
+
+                if (camerasResponse.isSuccessful) {
+                    val cameras = camerasResponse.body() ?: emptyList()
+                    val systemStatus = if (statusResponse.isSuccessful) statusResponse.body() else null
+                    
+                    if (isAdded && _binding != null) {
+                        populatePersonalFocusSpinner(cameras)
+                        populateGlobalPrimarySpinner(cameras, systemStatus)
+                    }
+                } else {
+                    if (isAdded) {
+                        showQuickToast("Failed to fetch camera list from server")
+                        populateEmptySpinners()
+                    }
+                }
+            } catch (e: Exception) {
+                if (isAdded) {
+                    showQuickToast("Server offline — offline mode settings loaded")
+                    populateEmptySpinners()
+                }
+            } finally {
+                isSpinnersLoading = false
+            }
+        }
+    }
+
+    private fun populatePersonalFocusSpinner(cameras: List<CameraInfo>) {
+        val displayList = mutableListOf<String>()
+        displayList.add("Global Active Camera (Default)")
+        
+        for (i in cameras.indices) {
+            displayList.add(cameras[i].displayTitle(i + 1))
+        }
+
+        val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, displayList)
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        binding.spinnerFocusCamera.adapter = adapter
+
+        // Set current selection
+        val savedFocus = prefs.getPersonalFocusCamera()
+        if (savedFocus == null) {
+            binding.spinnerFocusCamera.setSelection(0)
+        } else {
+            val index = cameras.indexOfFirst { it.id == savedFocus }
+            if (index != -1) {
+                binding.spinnerFocusCamera.setSelection(index + 1)
+            } else {
+                binding.spinnerFocusCamera.setSelection(0)
+            }
+        }
+
+        binding.spinnerFocusCamera.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                if (isSpinnersLoading) return
+                if (position == 0) {
+                    prefs.setPersonalFocusCamera(null)
+                    showQuickToast("Personal Focus: Default (Global Primary)")
+                } else {
+                    val selectedCamera = cameras[position - 1]
+                    prefs.setPersonalFocusCamera(selectedCamera.id)
+                    showQuickToast("Personal Focus set to: ${selectedCamera.name ?: selectedCamera.id}")
+                }
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>?) {}
+        }
+    }
+
+    private fun populateGlobalPrimarySpinner(cameras: List<CameraInfo>, status: SystemStatus?) {
+        if (cameras.isEmpty()) {
+            populateEmptySpinners()
+            return
+        }
+
+        val displayList = cameras.mapIndexed { idx, cam -> cam.displayTitle(idx + 1) }
+        val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, displayList)
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        binding.spinnerGlobalPrimaryCamera.adapter = adapter
+        binding.spinnerGlobalPrimaryCamera.isEnabled = true
+
+        // Find the current global active primary camera
+        val currentPrimaryId = status?.active_detection_camera 
+            ?: cameras.find { it.is_primary == true }?.id
+
+        if (currentPrimaryId != null) {
+            val index = cameras.indexOfFirst { it.id == currentPrimaryId }
+            if (index != -1) {
+                binding.spinnerGlobalPrimaryCamera.setSelection(index)
+            }
+        }
+
+        binding.spinnerGlobalPrimaryCamera.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                if (isSpinnersLoading) return
+                val selectedCamera = cameras[position]
+                
+                // Call API to set global primary camera
+                scope.launch {
+                    try {
+                        val body = mapOf("action" to "set_primary")
+                        val response = withContext(Dispatchers.IO) {
+                            RetrofitClient.api.controlCamera(selectedCamera.id, body).execute()
+                        }
+                        if (response.isSuccessful) {
+                            showQuickToast("Global primary camera updated to: ${selectedCamera.name ?: selectedCamera.id}")
+                        } else {
+                            showQuickToast("Failed to update server camera focus")
+                        }
+                    } catch (e: Exception) {
+                        showQuickToast("Network error: failed to update global primary camera")
+                    }
+                }
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>?) {}
+        }
+    }
+
+    private fun populateEmptySpinners() {
+        if (!isAdded) return
+        // Local Focus Spinner can still have the default option
+        val focusList = listOf("Global Active Camera (Default)")
+        val focusAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, focusList)
+        focusAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        binding.spinnerFocusCamera.adapter = focusAdapter
+        binding.spinnerFocusCamera.setSelection(0)
+
+        // Global Primary Spinner will show a placeholder and be disabled
+        val globalList = listOf("No cameras available")
+        val globalAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, globalList)
+        globalAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        binding.spinnerGlobalPrimaryCamera.adapter = globalAdapter
+        binding.spinnerGlobalPrimaryCamera.isEnabled = false
+    }
+
     override fun onDestroyView() {
         super.onDestroyView()
+        job.cancel()
         _binding = null
     }
 }

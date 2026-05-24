@@ -72,16 +72,18 @@ class MainActivity : AppCompatActivity() {
         // Request permissions if needed
         requestPermissions()
 
-        // Start alert service
-        try {
-            val intent = Intent(this, AlertService::class.java)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                startForegroundService(intent)
-            } else {
-                startService(intent)
+        // Start alert service if auto-start is enabled
+        if (preferenceManager.isAutoStartService()) {
+            try {
+                val intent = Intent(this, AlertService::class.java)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    startForegroundService(intent)
+                } else {
+                    startService(intent)
+                }
+            } catch (e: Exception) {
+                Toast.makeText(this, "Failed to start alert service", Toast.LENGTH_SHORT).show()
             }
-        } catch (e: Exception) {
-            Toast.makeText(this, "Failed to start alert service", Toast.LENGTH_SHORT).show()
         }
 
         setupBottomNavigation()
@@ -176,10 +178,13 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun loadFragment(fragment: Fragment) {
-        supportFragmentManager.beginTransaction()
+    fun loadFragment(fragment: Fragment, addToBackStack: Boolean = false) {
+        val transaction = supportFragmentManager.beginTransaction()
             .replace(R.id.fragment_container, fragment)
-            .commit()
+        if (addToBackStack) {
+            transaction.addToBackStack(null)
+        }
+        transaction.commit()
     }
 
     override fun onNewIntent(intent: Intent?) {
@@ -315,8 +320,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showDetectionHistory() {
-        Toast.makeText(this, "Detection history coming soon", Toast.LENGTH_SHORT).show()
-        // TODO: Navigate to history fragment
+        loadFragment(com.example.animalalert.ui.fragments.DetectionHistoryFragment(), addToBackStack = true)
     }
 
     private fun shareMyLocation() {

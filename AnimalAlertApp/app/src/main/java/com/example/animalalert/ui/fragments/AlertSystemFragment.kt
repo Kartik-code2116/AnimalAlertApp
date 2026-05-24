@@ -266,7 +266,7 @@ class AlertSystemFragment : Fragment() {
             while (true) {
                 try {
                     val response = withContext(Dispatchers.IO) {
-                        RetrofitClient.api.getLatestAlert().execute()
+                        RetrofitClient.api.getLatestAlert(null).execute()
                     }
                     if (response.isSuccessful) {
                         response.body()?.let { alert ->
@@ -279,15 +279,21 @@ class AlertSystemFragment : Fragment() {
                     val b = _binding ?: break
                     b.tvStatus.text = "Error: ${e.message}"
                 }
-                delay(3000)
+                val pollInterval = preferenceManager.getPollIntervalSec().coerceIn(1, 10)
+                delay(pollInterval * 1000L)
             }
         }
     }
 
     private fun updateUI(alert: AlertResponse) {
         val b = _binding ?: return
-        if (alert.animal_detected && DetectionHistory.isWildAnimal(alert.animal_type)) {
-            val dangerLevel = DetectionHistory.calculateDangerLevel(alert.animal_type, alert.confidence)
+        val dangerLevel = DetectionHistory.calculateDangerLevel(alert.animal_type, alert.confidence)
+        val meetsConfidence = alert.confidence >= preferenceManager.getConfidenceThreshold()
+        val isWild = DetectionHistory.isWildAnimal(alert.animal_type)
+
+        val isAlertActive = alert.animal_detected && meetsConfidence && (!preferenceManager.isDangerOnly() || (isWild && dangerLevel >= 3))
+
+        if (isAlertActive) {
             b.tvStatus.text = "⚠ LIVE THREAT"
             b.tvAnimalType.text = "${iconForAnimal(alert.animal_type)} ${alert.animal_type ?: "Unknown"}"
             b.tvConfidence.text = "Confidence: ${alert.confidence}% · LV $dangerLevel"
@@ -338,7 +344,7 @@ class AlertSystemFragment : Fragment() {
                         try {
                             val lat = parts[0].trim().toDouble()
                             val lng = parts[1].trim().toDouble()
-                            val dangerLevel = DetectionHistory.calculateDangerLevel(alert.animal_type, alert.confidence)
+                            val dangerLevelVal = DetectionHistory.calculateDangerLevel(alert.animal_type, alert.confidence)
                             
                             val intent = Intent(requireContext(), MainActivity::class.java).apply {
                                 putExtra("show_detection", true)
@@ -347,7 +353,7 @@ class AlertSystemFragment : Fragment() {
                                 putExtra("detection_location", alert.location)
                                 putExtra("detection_animal_type", alert.animal_type)
                                 putExtra("detection_confidence", alert.confidence)
-                                putExtra("detection_danger", dangerLevel)
+                                putExtra("detection_danger", dangerLevelVal)
                             }
                             startActivity(intent)
                         } catch (e: Exception) {
@@ -359,7 +365,8 @@ class AlertSystemFragment : Fragment() {
                 }
             }
         } else {
-            b.tvStatus.text = "✅ SYSTEM ACTIVE"
+            val running = isServiceRunning(AlertService::class.java)
+            b.tvStatus.text = if (running) "Service Running" else "Service Stopped"
             b.cardAlert.visibility = View.GONE
             b.ivStatus.setImageResource(R.drawable.ic_alert_inactive)
             b.cardAlert.setOnClickListener(null)

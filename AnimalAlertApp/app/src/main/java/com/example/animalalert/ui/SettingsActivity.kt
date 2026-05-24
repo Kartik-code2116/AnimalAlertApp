@@ -11,6 +11,8 @@ import com.example.animalalert.network.RetrofitClient
 import com.example.animalalert.utils.PreferenceManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -18,6 +20,11 @@ class SettingsActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivitySettingsBinding
     private lateinit var preferenceManager: PreferenceManager
+    
+    private val activityScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
+    private var isFocusInitializing = true
+    private var isGlobalInitializing = true
+    private var currentPrimaryCameraId: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -84,6 +91,9 @@ class SettingsActivity : AppCompatActivity() {
 
         // Restore theme listeners after loading completed
         setupThemeListeners()
+
+        // Asynchronously load registered cameras
+        fetchAndPopulateCameras()
     }
 
     private fun setupThemeListeners() {
@@ -110,6 +120,8 @@ class SettingsActivity : AppCompatActivity() {
             preferenceManager.setServerUrl("http://10.30.201.240:5000")
             binding.tvCurrentUrl.text = "Current: ${RetrofitClient.getBaseUrl()}"
             Toast.makeText(this, "Reset to default URL", Toast.LENGTH_SHORT).show()
+            // Reload cameras list on server update
+            fetchAndPopulateCameras()
         }
 
         // Detection Settings
@@ -155,6 +167,155 @@ class SettingsActivity : AppCompatActivity() {
         }
     }
 
+    private fun fetchAndPopulateCameras() {
+        binding.spinnerFocusCamera.isEnabled = false
+        binding.spinnerGlobalPrimaryCamera.isEnabled = false
+
+        activityScope.launch {
+            try {
+                val responseResult = withContext(Dispatchers.IO) {
+                    try {
+                        val response = RetrofitClient.api.getCameras().execute()
+                        if (response.isSuccessful) response.body() else null
+                    } catch (e: Exception) {
+                        null
+                    }
+                }
+
+                if (responseResult != null && responseResult.isNotEmpty()) {
+                    populateFocusCameraSpinner(responseResult)
+                    populateGlobalCameraSpinner(responseResult)
+                } else {
+                    setupOfflineFallback()
+                }
+            } catch (e: Exception) {
+                setupOfflineFallback()
+            }
+        }
+    }
+
+    private fun populateFocusCameraSpinner(cameras: List<com.example.animalalert.model.CameraInfo>) {
+        isFocusInitializing = true
+        val focusTitles = mutableListOf<String>()
+        focusTitles.add("Global Active Camera (Default)")
+
+        var selectedIndex = 0
+        val savedFocusId = preferenceManager.getPersonalFocusCamera()
+
+        for (i in cameras.indices) {
+            val camera = cameras[i]
+            focusTitles.add(camera.displayTitle(i + 1))
+            if (camera.id == savedFocusId) {
+                selectedIndex = i + 1
+            }
+        }
+
+        val adapter = android.widget.ArrayAdapter(this, android.R.layout.simple_spinner_item, focusTitles)
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        binding.spinnerFocusCamera.adapter = adapter
+        binding.spinnerFocusCamera.isEnabled = true
+        binding.spinnerFocusCamera.setSelection(selectedIndex)
+
+        binding.spinnerFocusCamera.onItemSelectedListener = object : android.widget.AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: android.widget.AdapterView<*>?, view: android.view.View?, position: Int, id: Long) {
+                if (isFocusInitializing) {
+                    isFocusInitializing = false
+                    return
+                }
+                if (position == 0) {
+                    preferenceManager.setPersonalFocusCamera(null)
+                    Toast.makeText(this@SettingsActivity, "Using global primary camera", Toast.LENGTH_SHORT).show()
+                } else {
+                    val selectedCam = cameras[position - 1]
+                    preferenceManager.setPersonalFocusCamera(selectedCam.id)
+                    Toast.makeText(this@SettingsActivity, "Focused on ${selectedCam.name ?: selectedCam.id}", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+            override fun onNothingSelected(parent: android.widget.AdapterView<*>?) {}
+        }
+    }
+
+    private fun populateGlobalCameraSpinner(cameras: List<com.example.animalalert.model.CameraInfo>) {
+        isGlobalInitializing = true
+        val globalTitles = mutableListOf<String>()
+        var selectedIndex = 0
+
+        val primaryCamera = cameras.find { it.is_primary == true }
+        currentPrimaryCameraId = primaryCamera?.id
+
+        for (i in cameras.indices) {
+            val camera = cameras[i]
+            globalTitles.add(camera.displayTitle(i + 1))
+            if (camera.id == currentPrimaryCameraId) {
+                selectedIndex = i
+            }
+        }
+
+        val adapter = android.widget.ArrayAdapter(this, android.R.layout.simple_spinner_item, globalTitles)
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        binding.spinnerGlobalPrimaryCamera.adapter = adapter
+        binding.spinnerGlobalPrimaryCamera.isEnabled = true
+        binding.spinnerGlobalPrimaryCamera.setSelection(selectedIndex)
+
+        binding.spinnerGlobalPrimaryCamera.onItemSelectedListener = object : android.widget.AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: android.widget.AdapterView<*>?, view: android.view.View?, position: Int, id: Long) {
+                if (isGlobalInitializing) {
+                    isGlobalInitializing = false
+                    return
+                }
+                val selectedCam = cameras[position]
+                if (selectedCam.id == currentPrimaryCameraId) return
+
+                val body = mapOf("action" to "set_primary")
+                RetrofitClient.api.controlCamera(selectedCam.id, body).enqueue(object : retrofit2.Callback<com.example.animalalert.model.GenericBackendResponse> {
+                    override fun onResponse(
+                        call: retrofit2.Call<com.example.animalalert.model.GenericBackendResponse>,
+                        response: retrofit2.Response<com.example.animalalert.model.GenericBackendResponse>
+                    ) {
+                        if (response.isSuccessful) {
+                            currentPrimaryCameraId = selectedCam.id
+                            Toast.makeText(this@SettingsActivity, "Server primary set to ${selectedCam.name ?: selectedCam.id}", Toast.LENGTH_SHORT).show()
+                        } else {
+                            isGlobalInitializing = true
+                            val prevIndex = cameras.indexOfFirst { it.id == currentPrimaryCameraId }
+                            if (prevIndex >= 0) binding.spinnerGlobalPrimaryCamera.setSelection(prevIndex)
+                            Toast.makeText(this@SettingsActivity, "Failed to update server camera", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+
+                    override fun onFailure(call: retrofit2.Call<com.example.animalalert.model.GenericBackendResponse>, t: Throwable) {
+                        isGlobalInitializing = true
+                        val prevIndex = cameras.indexOfFirst { it.id == currentPrimaryCameraId }
+                        if (prevIndex >= 0) binding.spinnerGlobalPrimaryCamera.setSelection(prevIndex)
+                        Toast.makeText(this@SettingsActivity, "Offline: failed to update primary camera", Toast.LENGTH_SHORT).show()
+                    }
+                })
+            }
+
+            override fun onNothingSelected(parent: android.widget.AdapterView<*>?) {}
+        }
+    }
+
+    private fun setupOfflineFallback() {
+        isFocusInitializing = true
+        val focusTitles = listOf("Global Active Camera (Default)")
+        val focusAdapter = android.widget.ArrayAdapter(this, android.R.layout.simple_spinner_item, focusTitles)
+        focusAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        binding.spinnerFocusCamera.adapter = focusAdapter
+        binding.spinnerFocusCamera.isEnabled = true
+        binding.spinnerFocusCamera.setSelection(0)
+        binding.spinnerFocusCamera.onItemSelectedListener = null
+
+        isGlobalInitializing = true
+        val globalTitles = listOf("No cameras available (Offline)")
+        val globalAdapter = android.widget.ArrayAdapter(this, android.R.layout.simple_spinner_item, globalTitles)
+        globalAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        binding.spinnerGlobalPrimaryCamera.adapter = globalAdapter
+        binding.spinnerGlobalPrimaryCamera.isEnabled = false
+        binding.spinnerGlobalPrimaryCamera.onItemSelectedListener = null
+    }
+
     private fun applyTheme() {
         val followSystem = preferenceManager.isFollowSystemTheme()
         val darkMode = preferenceManager.isDarkMode()
@@ -167,16 +328,17 @@ class SettingsActivity : AppCompatActivity() {
     }
 
     private fun testConnection() {
-        val url = binding.etServerUrl.text.toString().trim()
+        var url = binding.etServerUrl.text.toString().trim()
 
         if (url.isEmpty()) {
             binding.etServerUrl.error = "URL is required"
             return
         }
 
+        // Auto-prepend http:// if scheme is missing
         if (!url.startsWith("http://") && !url.startsWith("https://")) {
-            binding.etServerUrl.error = "URL must start with http:// or https://"
-            return
+            url = "http://$url"
+            binding.etServerUrl.setText(url)
         }
 
         // Update RetrofitClient with new URL
@@ -187,20 +349,38 @@ class SettingsActivity : AppCompatActivity() {
 
         Toast.makeText(this, "Testing connection...", Toast.LENGTH_SHORT).show()
 
-        CoroutineScope(Dispatchers.IO).launch {
+        activityScope.launch {
             try {
-                val response = RetrofitClient.api.getLatestAlert().execute()
-                withContext(Dispatchers.Main) {
-                    if (response.isSuccessful) {
-                        Toast.makeText(this@SettingsActivity, "Connection successful!", Toast.LENGTH_SHORT).show()
-                    } else {
-                        Toast.makeText(this@SettingsActivity, "Server responded with error", Toast.LENGTH_SHORT).show()
+                val result = withContext(Dispatchers.IO) {
+                    // Try health endpoint first (lightweight check, doesn't depend on database records)
+                    try {
+                        val healthResp = RetrofitClient.api.getHealth().execute()
+                        if (healthResp.isSuccessful) {
+                            return@withContext Pair(true, healthResp.code())
+                        }
+                    } catch (e: Exception) {
+                        // Ignored, fallback below
+                    }
+
+                    // Fallback to latest alert endpoint
+                    try {
+                        val alertResp = RetrofitClient.api.getLatestAlert().execute()
+                        Pair(alertResp.isSuccessful, alertResp.code())
+                    } catch (e: Exception) {
+                        throw e
                     }
                 }
-            } catch (e: Exception) {
-                withContext(Dispatchers.Main) {
-                    Toast.makeText(this@SettingsActivity, "Connection failed: ${e.message}", Toast.LENGTH_SHORT).show()
+
+                val (isSuccessful, code) = result
+                if (isSuccessful) {
+                    Toast.makeText(this@SettingsActivity, "Connection successful!", Toast.LENGTH_SHORT).show()
+                    // Reload cameras list on connection test success
+                    fetchAndPopulateCameras()
+                } else {
+                    Toast.makeText(this@SettingsActivity, "Server responded with error: $code", Toast.LENGTH_SHORT).show()
                 }
+            } catch (e: Exception) {
+                Toast.makeText(this@SettingsActivity, "Connection failed: ${e.message}", Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -248,5 +428,10 @@ class SettingsActivity : AppCompatActivity() {
     override fun onBackPressed() {
         super.onBackPressed()
         finish()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        activityScope.cancel()
     }
 }

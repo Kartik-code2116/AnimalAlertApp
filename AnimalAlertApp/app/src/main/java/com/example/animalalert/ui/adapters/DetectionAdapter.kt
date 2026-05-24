@@ -14,7 +14,8 @@ class DetectionAdapter(
     private var detections: List<DetectionHistory>,
     private val onItemClick: (DetectionHistory) -> Unit,
     private val onDeleteClick: (DetectionHistory) -> Unit = {},
-    private val onIconClick: (DetectionHistory) -> Unit = {}
+    private val onIconClick: (DetectionHistory) -> Unit = {},
+    private val showDeleteButton: Boolean = false
 ) : RecyclerView.Adapter<DetectionAdapter.DetectionViewHolder>() {
 
     fun updateData(newDetections: List<DetectionHistory>) {
@@ -94,6 +95,7 @@ class DetectionAdapter(
                 onIconClick(detection)
             }
             
+            btnDelete?.visibility = if (showDeleteButton) View.VISIBLE else View.GONE
             btnDelete?.setOnClickListener {
                 onDeleteClick(detection)
             }

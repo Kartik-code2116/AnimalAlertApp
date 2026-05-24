@@ -37,9 +37,22 @@ class PreferenceManager(context: Context) {
         const val KEY_SHOW_HISTORY_ON_MAP = "show_history_on_map"
         const val KEY_AUTO_CENTER_MAP = "auto_center_map"
         const val KEY_SERVER_URL = "server_url"
+        const val KEY_PERSONAL_FOCUS_CAMERA = "personal_focus_camera"
     }
     
     private val gson = Gson()
+
+    fun setPersonalFocusCamera(cameraId: String?) {
+        if (cameraId == null) {
+            prefs.edit().remove(KEY_PERSONAL_FOCUS_CAMERA).apply()
+        } else {
+            prefs.edit().putString(KEY_PERSONAL_FOCUS_CAMERA, cameraId).apply()
+        }
+    }
+
+    fun getPersonalFocusCamera(): String? {
+        return prefs.getString(KEY_PERSONAL_FOCUS_CAMERA, null)
+    }
 
     fun setLoggedIn(isLoggedIn: Boolean) {
         prefs.edit().putBoolean(KEY_IS_LOGGED_IN, isLoggedIn).apply()
@@ -192,7 +205,7 @@ class PreferenceManager(context: Context) {
 
     // ── Server ───────────────────────────────────────────────
     fun setServerUrl(url: String) { prefs.edit().putString(KEY_SERVER_URL, url).apply() }
-    fun getServerUrl(): String = prefs.getString(KEY_SERVER_URL, "http://192.168.1.100:5000") ?: "http://192.168.1.100:5000"
+    fun getServerUrl(): String = prefs.getString(KEY_SERVER_URL, "http://10.30.201.240:5000") ?: "http://10.30.201.240:5000"
 
     // Detection History — synchronized to prevent races between
     // AlertService (IO thread) and UI fragments (main thread).

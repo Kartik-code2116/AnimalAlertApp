@@ -80,45 +80,53 @@ class AlertService : Service() {
         if (!isMonitoring) {
             isMonitoring = true
             scope.launch {
+                val prefs = PreferenceManager(this@AlertService)
                 while (true) {
                     try {
-                        val response = RetrofitClient.api.getLatestAlert().awaitResponse()
+                        val response = RetrofitClient.api.getLatestAlert(null).awaitResponse()
 
                         if (response.isSuccessful) {
-
                             val alert = response.body()
                             if (alert != null) {
                                 Log.d("AlertService", "Alert fetched: $alert")
 
-                                if (alert.animal_detected && !userStopped && DetectionHistory.isWildAnimal(alert.animal_type)) {
-                                    playSiren()
-                                    // Update statistics
-                                    val prefs = PreferenceManager(this@AlertService)
-                                    prefs.incrementTotalDetections()
-                                    prefs.incrementTodayDetections()
+                                val dangerLevel = DetectionHistory.calculateDangerLevel(alert.animal_type, alert.confidence)
+                                val meetsConfidence = alert.confidence >= prefs.getConfidenceThreshold()
+                                val isWild = DetectionHistory.isWildAnimal(alert.animal_type)
+
+                                val isAlertActive = alert.animal_detected && meetsConfidence && (!prefs.isDangerOnly() || (isWild && dangerLevel >= 3))
+
+                                if (isAlertActive && !userStopped) {
+                                    if (prefs.isInAppSound()) {
+                                        playSiren()
+                                    } else {
+                                        stopSiren()
+                                    }
                                     
                                     // Save to detection history (avoid duplicates)
                                     val detectionId = "${alert.timestamp}_${alert.animal_type}"
                                     if (detectionId != lastDetectionId) {
+                                        // Update statistics
+                                        prefs.incrementTotalDetections()
+                                        prefs.incrementTodayDetections()
                                         saveDetectionToHistory(alert, prefs)
                                         lastDetectionId = detectionId
                                     }
                                     
                                     // Send notifications
                                     sendNotifications(alert, prefs)
-                                } else if (!alert.animal_detected || !DetectionHistory.isWildAnimal(alert.animal_type)) {
+                                } else {
                                     stopSiren()
                                     userStopped = false
                                 }
                             }
-
                         }
-
                     } catch (e: Exception) {
                         Log.e("AlertService", "Error: ${e.localizedMessage}")
                     }
 
-                    delay(3000)
+                    val pollInterval = prefs.getPollIntervalSec().coerceIn(1, 10)
+                    delay(pollInterval * 1000L)
                 }
             }
         }

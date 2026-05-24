@@ -32,8 +32,16 @@ object ServerSyncManager {
                 val existing = prefs.getDetectionHistory()
                 var added = 0
 
+                val dangerOnly = prefs.isDangerOnly()
+                val minConfidence = prefs.getConfidenceThreshold()
+
                 serverAlerts
-                    .filter { it.animal_detected && DetectionHistory.isWildAnimal(it.animal_type) }
+                    .filter {
+                        val dangerLevel = DetectionHistory.calculateDangerLevel(it.animal_type, it.confidence)
+                        val meetsConfidence = it.confidence >= minConfidence
+                        val isWild = DetectionHistory.isWildAnimal(it.animal_type)
+                        it.animal_detected && meetsConfidence && (!dangerOnly || (isWild && dangerLevel >= 3))
+                    }
                     .forEach { serverAlert ->
                         val detection = serverAlert.toDetectionHistory()
                         val alreadyHave = existing.any { it.timestamp == detection.timestamp }

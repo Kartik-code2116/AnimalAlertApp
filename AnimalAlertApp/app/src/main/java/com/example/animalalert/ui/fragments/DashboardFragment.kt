@@ -107,6 +107,20 @@ class DashboardFragment : Fragment() {
         binding.cardSettings.setOnClickListener {
             handleQuickActionClick(it)
         }
+
+        binding.cardTotal.setOnClickListener {
+            (activity as? com.example.animalalert.ui.MainActivity)?.loadFragment(
+                com.example.animalalert.ui.fragments.DetectionHistoryFragment(),
+                addToBackStack = true
+            )
+        }
+
+        binding.tvViewAll.setOnClickListener {
+            (activity as? com.example.animalalert.ui.MainActivity)?.loadFragment(
+                com.example.animalalert.ui.fragments.DetectionHistoryFragment(),
+                addToBackStack = true
+            )
+        }
     }
 
     private fun updateHeaderFromPrefs(cameraLine: String? = null) {
@@ -226,7 +240,7 @@ class DashboardFragment : Fragment() {
         scope.launch {
             val alert: AlertResponse? = try {
                 withContext(Dispatchers.IO) {
-                    val response = RetrofitClient.api.getLatestAlert().execute()
+                    val response = RetrofitClient.api.getLatestAlert(null).execute()
                     if (response.isSuccessful) response.body() else null
                 }
             } catch (_: Exception) {
@@ -234,9 +248,17 @@ class DashboardFragment : Fragment() {
             }
 
             val b = _binding ?: return@launch
-            if (alert?.animal_detected == true && DetectionHistory.isWildAnimal(alert.animal_type)) {
+            var isAlertActive = false
+            var dangerLevel = 1
+            if (alert != null) {
+                dangerLevel = DetectionHistory.calculateDangerLevel(alert.animal_type, alert.confidence)
+                val meetsConfidence = alert.confidence >= preferenceManager.getConfidenceThreshold()
+                val isWild = DetectionHistory.isWildAnimal(alert.animal_type)
+                isAlertActive = alert.animal_detected && meetsConfidence && (!preferenceManager.isDangerOnly() || (isWild && dangerLevel >= 3))
+            }
+
+            if (isAlertActive && alert != null) {
                 currentActiveCount = 1
-                val dangerLevel = DetectionHistory.calculateDangerLevel(alert.animal_type, alert.confidence)
 
                 b.cardActiveAlert.visibility = View.VISIBLE
                 b.tvActiveAlertLabel.text = "⚠ Active Alert"

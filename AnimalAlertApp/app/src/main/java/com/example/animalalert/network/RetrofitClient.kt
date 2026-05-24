@@ -10,7 +10,7 @@ import java.util.concurrent.TimeUnit
 
 object RetrofitClient {
 
-    private const val DEFAULT_BASE_URL = "http://192.168.1.100:5000/"
+    private const val DEFAULT_BASE_URL = "http://10.30.201.240:5000/"
     private var currentBaseUrl: String = DEFAULT_BASE_URL
     private var retrofit: Retrofit? = null
 
@@ -27,7 +27,13 @@ object RetrofitClient {
     }
 
     fun setBaseUrl(url: String) {
-        val formattedUrl = if (url.endsWith("/")) url else "$url/"
+        val trimmed = url.trim()
+        if (trimmed.isEmpty()) return
+        var processedUrl = trimmed
+        if (!processedUrl.startsWith("http://") && !processedUrl.startsWith("https://")) {
+            processedUrl = "http://$processedUrl"
+        }
+        val formattedUrl = if (processedUrl.endsWith("/")) processedUrl else "$processedUrl/"
         currentBaseUrl = formattedUrl
         retrofit = null // Force recreation with new URL
     }
