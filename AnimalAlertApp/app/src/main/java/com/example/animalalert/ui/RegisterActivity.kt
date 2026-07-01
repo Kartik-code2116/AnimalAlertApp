@@ -74,6 +74,7 @@ class RegisterActivity : AppCompatActivity() {
                     val body = response.body()
                     if (response.isSuccessful && body?.status == "success") {
                         preferenceManager.setLoggedIn(true)
+                        preferenceManager.setAuthToken(body.token)
                         preferenceManager.saveUserData(name, email, phone)
                         Toast.makeText(this@RegisterActivity, "Registration successful!", Toast.LENGTH_SHORT).show()
                         val intent = Intent(this@RegisterActivity, MainActivity::class.java)

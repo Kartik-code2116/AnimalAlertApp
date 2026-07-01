@@ -2,13 +2,14 @@ package com.example.animalalert.utils
 
 import android.content.Context
 import android.content.SharedPreferences
+import com.example.animalalert.data.AppDatabase
 import com.example.animalalert.model.DetectionHistory
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 
 class PreferenceManager(context: Context) {
     private val prefs: SharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-    private val historyLock = Any()
+    private val dao = AppDatabase.getDatabase(context).detectionDao()
 
     companion object {
         private const val PREFS_NAME = "AnimalAlertPrefs"
@@ -16,6 +17,7 @@ class PreferenceManager(context: Context) {
         private const val KEY_USER_NAME = "user_name"
         private const val KEY_USER_EMAIL = "user_email"
         private const val KEY_USER_PHONE = "user_phone"
+        private const val KEY_AUTH_TOKEN = "auth_token"
         private const val KEY_TOTAL_DETECTIONS = "total_detections"
         private const val KEY_TODAY_DETECTIONS = "today_detections"
         private const val KEY_LAST_DETECTION_DATE = "last_detection_date"
@@ -81,6 +83,18 @@ class PreferenceManager(context: Context) {
 
     fun getUserPhone(): String {
         return prefs.getString(KEY_USER_PHONE, "") ?: ""
+    }
+
+    fun setAuthToken(token: String?) {
+        if (token == null) {
+            prefs.edit().remove(KEY_AUTH_TOKEN).apply()
+        } else {
+            prefs.edit().putString(KEY_AUTH_TOKEN, token).apply()
+        }
+    }
+
+    fun getAuthToken(): String? {
+        return prefs.getString(KEY_AUTH_TOKEN, null)
     }
 
     fun incrementTotalDetections() {
@@ -205,68 +219,43 @@ class PreferenceManager(context: Context) {
 
     // ── Server ───────────────────────────────────────────────
     fun setServerUrl(url: String) { prefs.edit().putString(KEY_SERVER_URL, url).apply() }
-    fun getServerUrl(): String = prefs.getString(KEY_SERVER_URL, "http://10.30.201.240:5000") ?: "http://10.30.201.240:5000"
+    fun getServerUrl(): String = prefs.getString(KEY_SERVER_URL, "https://10.30.201.240:5000") ?: "https://10.30.201.240:5000"
 
-    // Detection History — synchronized to prevent races between
-    // AlertService (IO thread) and UI fragments (main thread).
+    // Detection History — migrated to Room DB
     fun addDetectionHistory(detection: DetectionHistory) {
-        synchronized(historyLock) {
-            val history = getDetectionHistoryInternal().toMutableList()
-            history.add(0, detection) // Add to beginning
-
-            // Keep only last MAX_HISTORY_SIZE detections
-            if (history.size > MAX_HISTORY_SIZE) {
-                history.removeAt(history.size - 1)
-            }
-
-            val json = gson.toJson(history)
-            prefs.edit().putString(KEY_DETECTION_HISTORY, json).commit()
-        }
+        dao.insertDetectionSync(detection)
     }
 
     fun getDetectionHistory(): List<DetectionHistory> {
-        synchronized(historyLock) {
-            return getDetectionHistoryInternal()
-        }
+        return dao.getRecentDetectionsSync(MAX_HISTORY_SIZE)
     }
 
     private fun getDetectionHistoryInternal(): List<DetectionHistory> {
-        val json = prefs.getString(KEY_DETECTION_HISTORY, null)
-        return if (json != null) {
-            val type = object : TypeToken<List<DetectionHistory>>() {}.type
-            gson.fromJson(json, type) ?: emptyList()
-        } else {
-            emptyList()
-        }
+        return dao.getRecentDetectionsSync(MAX_HISTORY_SIZE)
     }
 
     fun clearDetectionHistory() {
-        synchronized(historyLock) {
-            prefs.edit().remove(KEY_DETECTION_HISTORY).commit()
-        }
+        dao.clearHistorySync()
     }
 
     fun removeDetectionHistory(detectionId: String) {
-        synchronized(historyLock) {
-            val history = getDetectionHistoryInternal().toMutableList()
-            val detectionToRemove = history.find { it.id == detectionId }
+        // Need to grab the detection first to handle metrics
+        val history = dao.getRecentDetectionsSync(100)
+        val detectionToRemove = history.find { it.id == detectionId }
+        
+        if (detectionToRemove != null) {
+            dao.deleteDetectionSync(detectionId)
             
-            if (detectionToRemove != null) {
-                // Decrement total count
-                decrementTotalDetections()
-                
-                // Decrement today's count if it was from today
-                val dateFormat = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
-                val today = dateFormat.format(java.util.Date())
-                val detectionDate = dateFormat.format(java.util.Date(detectionToRemove.timestamp))
-                
-                if (today == detectionDate) {
-                    decrementTodayDetections()
-                }
-                
-                history.remove(detectionToRemove)
-                val json = gson.toJson(history)
-                prefs.edit().putString(KEY_DETECTION_HISTORY, json).commit()
+            // Decrement total count
+            decrementTotalDetections()
+            
+            // Decrement today's count if it was from today
+            val dateFormat = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
+            val today = dateFormat.format(java.util.Date())
+            val detectionDate = dateFormat.format(java.util.Date(detectionToRemove.timestamp))
+            
+            if (today == detectionDate) {
+                decrementTodayDetections()
             }
         }
     }

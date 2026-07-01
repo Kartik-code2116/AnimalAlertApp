@@ -87,7 +87,10 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         }
 
         binding.btnMyLocation.setOnClickListener {
-            getCurrentLocation()
+            currentLocation?.let { loc ->
+                val latLng = LatLng(loc.latitude, loc.longitude)
+                googleMap?.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15f))
+            } ?: getCurrentLocation()
         }
         
         // Check if we need to show a specific detection
@@ -157,9 +160,16 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                 val lng = detection.longitude ?: continue
                 val latLng = LatLng(lat, lng)
                 val dangerText = detection.getDangerLevelText()
-                
                 val colorConfig = getColorConfigForDangerLevel(detection.dangerLevel)
-                val dotIcon = vectorToBitmap(colorConfig.drawableId)
+                
+                val hue = when (detection.dangerLevel) {
+                    5 -> com.google.android.gms.maps.model.BitmapDescriptorFactory.HUE_RED
+                    4 -> com.google.android.gms.maps.model.BitmapDescriptorFactory.HUE_ORANGE
+                    3 -> com.google.android.gms.maps.model.BitmapDescriptorFactory.HUE_YELLOW
+                    2 -> com.google.android.gms.maps.model.BitmapDescriptorFactory.HUE_CYAN
+                    else -> com.google.android.gms.maps.model.BitmapDescriptorFactory.HUE_GREEN
+                }
+                val teardropIcon = com.google.android.gms.maps.model.BitmapDescriptorFactory.defaultMarker(hue)
                 val circleStroke = colorConfig.strokeColor
                 val circleFill = colorConfig.fillColor
                 
@@ -176,8 +186,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                         .position(latLng)
                         .title("Animal Detected: ${detection.animalType ?: "Unknown"}")
                         .snippet("Confidence: ${detection.confidence}% | Danger: $dangerText | Location: ${detection.location ?: "N/A"}")
-                        .anchor(0.5f, 0.5f) // Center the dot
-                        .icon(dotIcon)
+                        .icon(teardropIcon)
                 )
                 marker?.let { 
                     markers.add(it)
@@ -202,7 +211,15 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         if (focusLat != null && focusLng != null && focusLat != 0.0 && focusLng != 0.0 && !foundFocusInHistory) {
             val latLng = LatLng(focusLat, focusLng)
             val colorConfig = getColorConfigForDangerLevel(focusDangerLevel)
-            val dotIcon = vectorToBitmap(colorConfig.drawableId)
+            
+            val hue = when (focusDangerLevel) {
+                5 -> com.google.android.gms.maps.model.BitmapDescriptorFactory.HUE_RED
+                4 -> com.google.android.gms.maps.model.BitmapDescriptorFactory.HUE_ORANGE
+                3 -> com.google.android.gms.maps.model.BitmapDescriptorFactory.HUE_YELLOW
+                2 -> com.google.android.gms.maps.model.BitmapDescriptorFactory.HUE_CYAN
+                else -> com.google.android.gms.maps.model.BitmapDescriptorFactory.HUE_GREEN
+            }
+            val teardropIcon = com.google.android.gms.maps.model.BitmapDescriptorFactory.defaultMarker(hue)
             val circleStroke = colorConfig.strokeColor
             val circleFill = colorConfig.fillColor
             
@@ -215,8 +232,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                     .position(latLng)
                     .title("Animal Detected: ${focusAnimalType ?: "Unknown"}")
                     .snippet("Confidence: ${focusConfidence}% | Danger: $dangerText")
-                    .anchor(0.5f, 0.5f)
-                    .icon(dotIcon)
+                    .icon(teardropIcon)
             )
             marker?.let {
                 markers.add(it)
@@ -346,8 +362,8 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             fusedLocationClient.lastLocation.addOnSuccessListener { location ->
                 location?.let {
                     currentLocation = it
-                    val latLng = LatLng(it.latitude, it.longitude)
-                    googleMap?.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15f))
+                    // Removed animateCamera here so the map stays focused on the surveillance cameras
+                    // rather than snapping back to the user's phone GPS location.
                 }
             }
         }
@@ -401,7 +417,14 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                 showAllDetectionsOnMap()
 
                 val colorConfig = getColorConfigForDangerLevel(dangerLevel)
-                val liveDotIcon = vectorToBitmap(colorConfig.drawableId)
+                val hue = when (dangerLevel) {
+                    5 -> com.google.android.gms.maps.model.BitmapDescriptorFactory.HUE_RED
+                    4 -> com.google.android.gms.maps.model.BitmapDescriptorFactory.HUE_ORANGE
+                    3 -> com.google.android.gms.maps.model.BitmapDescriptorFactory.HUE_YELLOW
+                    2 -> com.google.android.gms.maps.model.BitmapDescriptorFactory.HUE_CYAN
+                    else -> com.google.android.gms.maps.model.BitmapDescriptorFactory.HUE_GREEN
+                }
+                val teardropIcon = com.google.android.gms.maps.model.BitmapDescriptorFactory.defaultMarker(hue)
                 val liveCircleStroke = colorConfig.strokeColor
                 val liveCircleFill = colorConfig.fillColor
 
@@ -410,8 +433,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                         .position(latLng)
                         .title("LIVE: ${alert.animal_type ?: "Unknown"}")
                         .snippet("Confidence: ${alert.confidence}%")
-                        .anchor(0.5f, 0.5f)
-                        .icon(liveDotIcon)
+                        .icon(teardropIcon)
                 )
                 marker?.let { markers.add(it) }
 
@@ -609,6 +631,14 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                     .alpha(if (offline) 0.75f else 1f)
             )
             marker?.let { cameraMarkers.add(it) }
+        }
+
+        // Center map on the first camera if auto-center is enabled
+        context?.let { ctx ->
+            if (com.example.animalalert.utils.PreferenceManager(ctx).isAutoCenterMap() && positions.isNotEmpty()) {
+                val firstCamLoc = positions[0].first
+                googleMap?.animateCamera(CameraUpdateFactory.newLatLngZoom(firstCamLoc, 13f))
+            }
         }
 
         startRadarScanAnimation()

@@ -71,6 +71,7 @@ class LoginActivity : AppCompatActivity() {
                     val body = response.body()
                     if (response.isSuccessful && body?.status == "success") {
                         preferenceManager.setLoggedIn(true)
+                        preferenceManager.setAuthToken(body.token)
                         preferenceManager.saveUserData(
                             body.user?.name ?: email,
                             email,

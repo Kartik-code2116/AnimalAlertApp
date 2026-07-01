@@ -115,9 +115,9 @@ class SettingsActivity : AppCompatActivity() {
         }
 
         binding.btnResetUrl.setOnClickListener {
-            binding.etServerUrl.setText("http://10.30.201.240:5000")
+            binding.etServerUrl.setText("https://10.30.201.240:5000")
             RetrofitClient.resetToDefault()
-            preferenceManager.setServerUrl("http://10.30.201.240:5000")
+            preferenceManager.setServerUrl("https://10.30.201.240:5000")
             binding.tvCurrentUrl.text = "Current: ${RetrofitClient.getBaseUrl()}"
             Toast.makeText(this, "Reset to default URL", Toast.LENGTH_SHORT).show()
             // Reload cameras list on server update
@@ -335,9 +335,12 @@ class SettingsActivity : AppCompatActivity() {
             return
         }
 
-        // Auto-prepend http:// if scheme is missing
-        if (!url.startsWith("http://") && !url.startsWith("https://")) {
-            url = "http://$url"
+        // Auto-upgrade to https:// to prevent cleartext traffic errors
+        if (url.startsWith("http://")) {
+            url = url.replaceFirst("http://", "https://")
+            binding.etServerUrl.setText(url)
+        } else if (!url.startsWith("https://")) {
+            url = "https://$url"
             binding.etServerUrl.setText(url)
         }
 

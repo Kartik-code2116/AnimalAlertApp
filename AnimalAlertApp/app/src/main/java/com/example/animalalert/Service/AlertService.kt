@@ -234,14 +234,38 @@ class AlertService : Service() {
             notificationHelper.showAnimalDetectionNotification(alert)
         }
         
-        // Email notification — skipped from background service.
-        // EmailHelper uses startActivity() which cannot launch from a background service
-        // on Android 10+. Email alerts are only sent when triggered from a foreground Activity.
-        // To send emails from background, integrate a backend email API instead.
+        // Email notification via Backend API
         if (prefs.isEmailNotificationEnabled()) {
             val email = prefs.getUserEmail()
             if (email.isNotEmpty()) {
-                Log.d("AlertService", "Email notification skipped (cannot launch email app from background service). Email: $email")
+                val dateFormat = java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss", java.util.Locale.getDefault())
+                val timeStr = dateFormat.format(java.util.Date(if (alert.timestamp < 1000000000000L) alert.timestamp * 1000 else alert.timestamp))
+                
+                val body = """
+                    Animal Detection Alert
+                    
+                    Animal Type: ${alert.animal_type ?: "Unknown"}
+                    Confidence: ${alert.confidence}%
+                    Location: ${alert.location ?: "Not available"}
+                    Detection Time: $timeStr
+                    
+                    This is an automated alert from WildTrack.
+                """.trimIndent()
+                
+                RetrofitClient.api.sendEmailNotification(
+                    com.example.animalalert.model.EmailRequest(
+                        to = email,
+                        subject = "🚨 Animal Detection Alert - ${alert.animal_type ?: "Unknown"}",
+                        body = body
+                    )
+                ).enqueue(object : retrofit2.Callback<com.example.animalalert.model.GenericBackendResponse> {
+                    override fun onResponse(call: retrofit2.Call<com.example.animalalert.model.GenericBackendResponse>, response: retrofit2.Response<com.example.animalalert.model.GenericBackendResponse>) {
+                        Log.d("AlertService", "Backend Email API called successfully")
+                    }
+                    override fun onFailure(call: retrofit2.Call<com.example.animalalert.model.GenericBackendResponse>, t: Throwable) {
+                        Log.e("AlertService", "Backend Email API failed: ${t.message}")
+                    }
+                })
             }
         }
         

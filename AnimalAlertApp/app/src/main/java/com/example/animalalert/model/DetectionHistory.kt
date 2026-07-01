@@ -1,11 +1,14 @@
 package com.example.animalalert.model
 
 import android.os.Parcelable
+import androidx.room.Entity
+import androidx.room.PrimaryKey
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
+@Entity(tableName = "detection_history")
 data class DetectionHistory(
-    val id: String,
+    @PrimaryKey val id: String,
     val animalType: String?,
     val confidence: Float,
     val location: String?,

@@ -62,4 +62,8 @@ interface ApiService {
 
     @POST("/api/auth/register")
     fun register(@Body body: RegisterRequest): Call<AuthResponse>
+
+    // ── Task 5: Server-side email notification ──────────────────────
+    @POST("/api/notify/email")
+    fun sendEmailNotification(@Body body: com.example.animalalert.model.EmailRequest): Call<GenericBackendResponse>
 }

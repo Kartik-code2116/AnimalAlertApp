@@ -7,6 +7,7 @@ data class RegisterRequest(val name: String, val email: String, val password: St
 data class AuthResponse(
     val status: String,
     val message: String? = null,
+    val token: String? = null,
     val user: UserInfo? = null
 )
 
