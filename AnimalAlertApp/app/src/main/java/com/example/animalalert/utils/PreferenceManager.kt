@@ -219,7 +219,7 @@ class PreferenceManager(context: Context) {
 
     // ── Server ───────────────────────────────────────────────
     fun setServerUrl(url: String) { prefs.edit().putString(KEY_SERVER_URL, url).apply() }
-    fun getServerUrl(): String = prefs.getString(KEY_SERVER_URL, "https://10.30.201.240:5000") ?: "https://10.30.201.240:5000"
+    fun getServerUrl(): String = prefs.getString(KEY_SERVER_URL, "https://10.244.200.127:5000") ?: "https://10.244.200.127:5000"
 
     // Detection History — migrated to Room DB
     fun addDetectionHistory(detection: DetectionHistory) {

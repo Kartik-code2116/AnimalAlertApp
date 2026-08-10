@@ -10,7 +10,7 @@ import java.util.concurrent.TimeUnit
 
 object RetrofitClient {
 
-    private const val DEFAULT_BASE_URL = "https://10.30.201.240:5000/"
+    private const val DEFAULT_BASE_URL = "https://10.244.200.127:5000/"
     private var currentBaseUrl: String = DEFAULT_BASE_URL
     private var retrofit: Retrofit? = null
     private var authContext: Context? = null

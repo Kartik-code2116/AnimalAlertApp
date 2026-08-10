@@ -28,10 +28,10 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.AnimalAlert">
 
-        <!-- Google Maps API Key (loaded from local.properties) -->
+        <!-- Google Maps API Key -->
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="${MAPS_API_KEY}" />
+            android:value="AIzaSyA-cr7SeRgDBdqNeY4tb8pzbzzFtQukXyU" />
 
         <activity
             android:name=".ui.LoginActivity"

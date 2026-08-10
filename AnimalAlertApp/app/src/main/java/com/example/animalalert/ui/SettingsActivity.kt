@@ -115,9 +115,9 @@ class SettingsActivity : AppCompatActivity() {
         }
 
         binding.btnResetUrl.setOnClickListener {
-            binding.etServerUrl.setText("https://10.30.201.240:5000")
+            binding.etServerUrl.setText("https://10.244.200.127:5000")
             RetrofitClient.resetToDefault()
-            preferenceManager.setServerUrl("https://10.30.201.240:5000")
+            preferenceManager.setServerUrl("https://10.244.200.127:5000")
             binding.tvCurrentUrl.text = "Current: ${RetrofitClient.getBaseUrl()}"
             Toast.makeText(this, "Reset to default URL", Toast.LENGTH_SHORT).show()
             // Reload cameras list on server update

@@ -48,19 +48,13 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
     private val cameraData = mutableListOf<CameraInfo>()
     private val cameraMarkers = mutableListOf<Marker>()
-    private val cameraCircles = mutableListOf<com.google.android.gms.maps.model.Circle>()
+    private val cameraCircles = mutableListOf<Pair<com.google.android.gms.maps.model.Circle, Int>>()
     private val detectionCircles = mutableListOf<com.google.android.gms.maps.model.Circle>()
     private var scanJob: Job? = null
     private var cameraSyncJob: Job? = null
 
     companion object {
         private const val LOCATION_PERMISSION_REQUEST_CODE = 1001
-        // Pune fallback when server is unreachable (matches production server defaults)
-        private val FALLBACK_CAMERA_LOCATIONS = listOf(
-            LatLng(18.5204, 73.8567),
-            LatLng(18.5210, 73.8570),
-            LatLng(18.5198, 73.8560)
-        )
     }
 
     override fun onCreateView(
@@ -80,11 +74,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment?
         mapFragment?.getMapAsync(this)
         
-        binding.mapSwipeRefresh.setColorSchemeResources(R.color.accent)
-        binding.mapSwipeRefresh.setProgressBackgroundColorSchemeResource(R.color.bg_card2)
-        binding.mapSwipeRefresh.setOnRefreshListener {
-            performMapRefresh(showAnimation = true)
-        }
+
 
         binding.btnMyLocation.setOnClickListener {
             currentLocation?.let { loc ->
@@ -309,8 +299,9 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
             if (triggerAnim) {
                 val focusCam = getCameraPositions().firstOrNull()?.first
-                    ?: FALLBACK_CAMERA_LOCATIONS.first()
-                googleMap?.animateCamera(CameraUpdateFactory.newLatLngZoom(focusCam, 16f))
+                if (focusCam != null) {
+                    googleMap?.animateCamera(CameraUpdateFactory.newLatLngZoom(focusCam, 16f))
+                }
                 Toast.makeText(ctx, "Surveillance sensors activated and scanning...", Toast.LENGTH_LONG).show()
             }
         } ?: run {
@@ -524,9 +515,6 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     }
 
     private fun performMapRefresh(showAnimation: Boolean) {
-        if (showAnimation && _binding != null) {
-            binding.mapSwipeRefresh.isRefreshing = true
-        }
         scope.launch {
             loadCamerasFromServer()
             if (_binding != null && googleMap != null) {
@@ -534,9 +522,6 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                 updateMapHeader()
             }
             fetchLatestAlert()
-            if (_binding != null) {
-                binding.mapSwipeRefresh.isRefreshing = false
-            }
         }
     }
 
@@ -588,12 +573,9 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     }
 
     private fun getCameraPositions(): List<Pair<LatLng, CameraInfo?>> {
-        val fromServer = cameraData.mapNotNull { cam ->
+        return cameraData.mapNotNull { cam ->
             parseLatLng(cam.location)?.let { pos -> pos to cam }
         }
-        if (fromServer.isNotEmpty()) return fromServer
-
-        return FALLBACK_CAMERA_LOCATIONS.map { it to null }
     }
 
     private fun plotCameras() {
@@ -646,7 +628,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
     private fun startRadarScanAnimation() {
         scanJob?.cancel()
-        cameraCircles.forEach { it.remove() }
+        cameraCircles.forEach { it.first.remove() }
         cameraCircles.clear()
 
         val positions = getCameraPositions()
@@ -663,7 +645,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                     .strokeColor(stroke)
                     .fillColor(fill)
             )
-            circle?.let { cameraCircles.add(it) }
+            circle?.let { cameraCircles.add(it to stroke) }
         }
 
         // Coroutine to pulse the circles
@@ -674,14 +656,17 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                 val radius = 50.0 + offset
                 val alphaPercent = (1.0 - (offset / 150.0)).coerceIn(0.0, 1.0)
                 
-                val fillAlphaHex = String.format("%02X", (alphaPercent * 25).toInt())
-                val strokeAlphaHex = String.format("%02X", (alphaPercent * 200).toInt())
-                
-                val fillColor = android.graphics.Color.parseColor("#${fillAlphaHex}00C853")
-                val strokeColor = android.graphics.Color.parseColor("#${strokeAlphaHex}00C853")
-                
                 withContext(Dispatchers.Main) {
-                    for (circle in cameraCircles) {
+                    for (pair in cameraCircles) {
+                        val circle = pair.first
+                        val baseColor = pair.second and 0x00FFFFFF
+                        
+                        val fillAlpha = (alphaPercent * 25).toInt().coerceIn(0, 255)
+                        val strokeAlpha = (alphaPercent * 200).toInt().coerceIn(0, 255)
+                        
+                        val fillColor = (fillAlpha shl 24) or baseColor
+                        val strokeColor = (strokeAlpha shl 24) or baseColor
+                        
                         circle.radius = radius
                         circle.fillColor = fillColor
                         circle.strokeColor = strokeColor

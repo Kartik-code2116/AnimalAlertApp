@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "170484835558",
+    "project_id": "wildtrack-e9b15",
+    "storage_bucket": "wildtrack-e9b15.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:170484835558:android:e52ca4f7bccae7da714727",
+        "android_client_info": {
+          "package_name": "com.example.animalalert"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyApLlBeCsMcGkeZJUfq-Ut7NxULirU2rhY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

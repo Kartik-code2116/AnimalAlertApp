@@ -9,10 +9,10 @@
             <InsightsFilterSettings>
               <option name="connection">
                 <ConnectionSetting>
-                  <option name="appId" value="PLACEHOLDER" />
-                  <option name="mobileSdkAppId" value="" />
-                  <option name="projectId" value="" />
-                  <option name="projectNumber" value="" />
+                  <option name="appId" value="com.example.animalalert" />
+                  <option name="mobileSdkAppId" value="1:170484835558:android:e52ca4f7bccae7da714727" />
+                  <option name="projectId" value="wildtrack-e9b15" />
+                  <option name="projectNumber" value="170484835558" />
                 </ConnectionSetting>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />
